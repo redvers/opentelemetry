@@ -1,0 +1,20 @@
+class val OtlpConfig
+  """
+  Configuration for the OTLP HTTP/JSON exporter.
+  """
+  let endpoint: String
+  let traces_path: String
+  let timeout_ms: U64
+  let headers: Array[(String, String)] val
+
+  new val create(
+    endpoint': String = "http://localhost:4318",
+    traces_path': String = "/v1/traces",
+    timeout_ms': U64 = 10000,
+    headers': Array[(String, String)] val =
+      recover val Array[(String, String)] end)
+  =>
+    endpoint = endpoint'
+    traces_path = traces_path'
+    timeout_ms = timeout_ms'
+    headers = headers'
