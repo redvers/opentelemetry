@@ -193,6 +193,10 @@ primitive OtlpJsonEncoder
     obj.data("traceId") = span.span_context.trace_id.hex()
     obj.data("spanId") = span.span_context.span_id.hex()
 
+    if span.span_context.trace_state.size() > 0 then
+      obj.data("traceState") = span.span_context.trace_state
+    end
+
     if span.parent_span_id.is_valid() then
       obj.data("parentSpanId") = span.parent_span_id.hex()
     end

@@ -167,6 +167,23 @@ class iso _TestOtlpMetricEncoderHistogram is UnitTest
                         | let bc_arr: json.JsonArray =>
                           h.assert_eq[USize](4, bc_arr.data.size(),
                             "Should have 4 bucket counts")
+                          // Verify individual bucket count values [2, 1, 1, 0]
+                          try
+                            h.assert_eq[String]("2",
+                              (bc_arr.data(0)? as String),
+                              "First bucket should have 2")
+                            h.assert_eq[String]("1",
+                              (bc_arr.data(1)? as String),
+                              "Second bucket should have 1")
+                            h.assert_eq[String]("1",
+                              (bc_arr.data(2)? as String),
+                              "Third bucket should have 1")
+                            h.assert_eq[String]("0",
+                              (bc_arr.data(3)? as String),
+                              "Fourth bucket should have 0")
+                          else
+                            h.fail("Could not read bucket count values")
+                          end
                         else h.fail("Expected bucketCounts array")
                         end
 
@@ -174,6 +191,20 @@ class iso _TestOtlpMetricEncoderHistogram is UnitTest
                         | let eb_arr: json.JsonArray =>
                           h.assert_eq[USize](3, eb_arr.data.size(),
                             "Should have 3 bounds")
+                          // Verify bound values [10, 50, 100]
+                          try
+                            h.assert_eq[F64](10,
+                              (eb_arr.data(0)? as F64),
+                              "First bound should be 10")
+                            h.assert_eq[F64](50,
+                              (eb_arr.data(1)? as F64),
+                              "Second bound should be 50")
+                            h.assert_eq[F64](100,
+                              (eb_arr.data(2)? as F64),
+                              "Third bound should be 100")
+                          else
+                            h.fail("Could not read explicit bound values")
+                          end
                         else h.fail("Expected explicitBounds array")
                         end
                       else h.fail("Expected data point object")

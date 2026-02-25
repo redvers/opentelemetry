@@ -10,12 +10,9 @@ class iso _TestAlwaysOnSampler is UnitTest
     let ctx = otel_api.Context
     let trace_id = otel_api.TraceId.generate()
     let result = sampler.should_sample(ctx, trace_id, "test", otel_api.SpanKindInternal)
-    match result.decision
-    | otel_sdk.SamplingDecisionRecordAndSample =>
-      h.assert_true(true)
-    else
-      h.fail("AlwaysOnSampler should always return RecordAndSample")
-    end
+    h.assert_is[otel_sdk.SamplingDecision](
+      result.decision, otel_sdk.SamplingDecisionRecordAndSample,
+      "AlwaysOnSampler should return RecordAndSample")
 
 
 class iso _TestAlwaysOffSampler is UnitTest
@@ -26,12 +23,9 @@ class iso _TestAlwaysOffSampler is UnitTest
     let ctx = otel_api.Context
     let trace_id = otel_api.TraceId.generate()
     let result = sampler.should_sample(ctx, trace_id, "test", otel_api.SpanKindInternal)
-    match result.decision
-    | otel_sdk.SamplingDecisionDrop =>
-      h.assert_true(true)
-    else
-      h.fail("AlwaysOffSampler should always return Drop")
-    end
+    h.assert_is[otel_sdk.SamplingDecision](
+      result.decision, otel_sdk.SamplingDecisionDrop,
+      "AlwaysOffSampler should return Drop")
 
 
 class iso _TestTraceIdRatioSampler is UnitTest

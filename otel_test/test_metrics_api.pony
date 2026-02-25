@@ -107,9 +107,16 @@ class iso _TestHistogramRecord is UnitTest
               hh.assert_eq[F64](129.5, p.sum, "Sum should be 129.5")
               hh.assert_eq[F64](1.5, p.min_val, "Min should be 1.5")
               hh.assert_eq[F64](100.0, p.max_val, "Max should be 100.0")
-              // Verify bucket_counts has entries
-              hh.assert_true(p.bucket_counts.size() > 0,
-                "Should have bucket counts")
+              // Default bounds: [0;5;10;25;50;75;100;250;500;750;1000] = 11 bounds, 12 buckets
+              hh.assert_eq[USize](12, p.bucket_counts.size(),
+                "Should have 12 bucket counts (11 bounds + 1)")
+              // Verify total count across buckets equals record count
+              var bucket_total: U64 = 0
+              for bc in p.bucket_counts.values() do
+                bucket_total = bucket_total + bc
+              end
+              hh.assert_eq[U64](4, bucket_total,
+                "Sum of bucket counts should equal record count")
             else
               hh.fail("Could not read histogram data point")
             end

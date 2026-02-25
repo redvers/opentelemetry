@@ -15,7 +15,7 @@ actor SimpleSpanProcessor is SpanProcessor
   be on_end(span: ReadOnlySpan val) =>
     if _is_shutdown then return end
     let batch = recover val [span] end
-    _exporter.export_spans(batch, {(result: ExportResult) => None })
+    _exporter.export_spans(batch, {(result: ExportResult) => None } val)
 
   be shutdown(callback: {(Bool)} val) =>
     _is_shutdown = true

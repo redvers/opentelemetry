@@ -171,12 +171,9 @@ class iso _TestSdkSpanStatusPrecedence is UnitTest
 
     let on_finish = {(ro: otel_sdk.ReadOnlySpan val)(hh) =>
       // Ok status should not be overridden by Error
-      match ro.status.code
-      | otel_api.SpanStatusOk =>
-        hh.assert_true(true)
-      else
-        hh.fail("Status should remain Ok after attempted Error override")
-      end
+      hh.assert_is[otel_api.SpanStatusCode](
+        ro.status.code, otel_api.SpanStatusOk,
+        "Status should remain Ok after attempted Error override")
       hh.complete(true)
     } val
 
@@ -318,3 +315,22 @@ class iso _TestSdkSpanAttributeTruncation is UnitTest
     let arr: Array[String] val = recover val ["abcdefgh"; "xy"] end
     span.set_attribute("tags", arr)
     span.finish()
+
+
+class iso _TestTracerProviderForceFlushAfterShutdown is UnitTest
+  fun name(): String => "SdkTracerProvider/force_flush_after_shutdown"
+
+  fun apply(h: TestHelper) =>
+    h.long_test(2_000_000_000)
+
+    let provider = otel_sdk.SdkTracerProvider
+    let hh: TestHelper = h
+
+    provider.shutdown({(ok: Bool)(provider, hh) =>
+      hh.assert_true(ok, "Shutdown should succeed")
+      provider.force_flush({(ok: Bool)(hh) =>
+        hh.assert_false(ok,
+          "force_flush after shutdown should return false")
+        hh.complete(true)
+      } val)
+    } val)

@@ -37,7 +37,10 @@ actor PeriodicMetricReader is MetricReader
     _provider.collect({(metrics: Array[MetricData val] val)(exporter, cb) =>
       if metrics.size() > 0 then
         exporter.export_metrics(metrics, {(result: ExportResult)(cb) =>
-          cb(true)
+          match result
+          | ExportSuccess => cb(true)
+          | ExportFailure => cb(false)
+          end
         } val)
       else
         cb(true)

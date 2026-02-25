@@ -74,3 +74,5 @@ actor Main is TestList
     test(_TestOtlpLogEncoderBasic)
     test(_TestOtlpLogEncoderScope)
     test(_TestOtlpLogEncoderTraceContext)
+    test(_TestOtlpJsonEncoderTraceState)
+    test(_TestTracerProviderForceFlushAfterShutdown)

@@ -90,6 +90,10 @@ actor SdkTracerProvider is otel_api.TracerProvider
     end
 
   be force_flush(callback: {(Bool)} val) =>
+    if _is_shutdown then
+      callback(false)
+      return
+    end
     let count = _processors.size()
     if count == 0 then
       callback(true)
