@@ -101,25 +101,64 @@ primitive OtlpJsonEncoder
     grouped
 
   fun _resource_key(resource: otel_api.Resource): String val =>
-    recover val
-      let s = String
-      s.append(resource.schema_url)
-      s.append("|")
-      for (k, v) in resource.attributes().values() do
-        s.append(k)
-        s.append("=")
-        match v
-        | let sv: String => s.append(sv)
-        | let bv: Bool => s.append(bv.string())
-        | let iv: I64 => s.append(iv.string())
-        | let fv: F64 => s.append(fv.string())
-        else
-          s.append("?")
+    let entries = Array[String](resource.attributes().size())
+    for (k, v) in resource.attributes().values() do
+      let entry = recover iso String end
+      entry.append(k)
+      entry.append("=")
+      match v
+      | let sv: String => entry.append(sv)
+      | let bv: Bool => entry.append(bv.string())
+      | let iv: I64 => entry.append(iv.string())
+      | let fv: F64 => entry.append(fv.string())
+      | let arr: Array[String] val =>
+        entry.append("[")
+        var first = true
+        for item in arr.values() do
+          if not first then entry.append(";") end
+          entry.append(item)
+          first = false
         end
-        s.append(",")
+        entry.append("]")
+      | let arr: Array[Bool] val =>
+        entry.append("[")
+        var first = true
+        for item in arr.values() do
+          if not first then entry.append(";") end
+          entry.append(item.string())
+          first = false
+        end
+        entry.append("]")
+      | let arr: Array[I64] val =>
+        entry.append("[")
+        var first = true
+        for item in arr.values() do
+          if not first then entry.append(";") end
+          entry.append(item.string())
+          first = false
+        end
+        entry.append("]")
+      | let arr: Array[F64] val =>
+        entry.append("[")
+        var first = true
+        for item in arr.values() do
+          if not first then entry.append(";") end
+          entry.append(item.string())
+          first = false
+        end
+        entry.append("]")
       end
-      s
+      entries.push(consume entry)
     end
+    Sort[Array[String], String](entries)
+    let s = recover iso String end
+    s.append(resource.schema_url)
+    s.append("|")
+    for entry in entries.values() do
+      s.append(entry)
+      s.append(",")
+    end
+    consume s
 
   fun _encode_resource(resource: otel_api.Resource): json.JsonObject =>
     let obj = json.JsonObject

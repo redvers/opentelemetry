@@ -150,6 +150,59 @@ class iso _TestResourceGrouping is UnitTest
     end
 
 
+class iso _TestAttributeOrderIndependence is UnitTest
+  fun name(): String => "Metrics/attribute_order_independence"
+
+  fun apply(h: TestHelper) =>
+    h.long_test(2_000_000_000)
+
+    let provider = otel_sdk.SdkMeterProvider
+    let hh: TestHelper = h
+
+    provider.get_meter("test", {(meter: otel_api.Meter val)(provider, hh) =>
+      let counter = meter.counter("requests")
+
+      // Same attributes in different order should map to the same data point
+      let attrs_ab: otel_api.Attributes = recover val
+        let a = Array[(String, otel_api.AttributeValue)]
+        a.push(("method", "GET"))
+        a.push(("status", I64(200)))
+        a
+      end
+      let attrs_ba: otel_api.Attributes = recover val
+        let a = Array[(String, otel_api.AttributeValue)]
+        a.push(("status", I64(200)))
+        a.push(("method", "GET"))
+        a
+      end
+
+      counter.add(I64(5), attrs_ab)
+      counter.add(I64(3), attrs_ba)
+
+      provider.collect({(metrics: Array[otel_sdk.MetricData val] val)(hh) =>
+        try
+          let m = metrics(0)?
+          match m.data
+          | let points: Array[otel_sdk.NumberDataPoint val] val =>
+            hh.assert_eq[USize](1, points.size(),
+              "Same attributes in different order should produce one data point")
+            try
+              hh.assert_eq[F64](8.0, points(0)?.value,
+                "Sum should be 8.0 (both adds merged)")
+            else
+              hh.fail("Could not read data point")
+            end
+          else
+            hh.fail("Expected NumberDataPoint array")
+          end
+        else
+          hh.fail("Could not read metric")
+        end
+        hh.complete(true)
+      } val)
+    } val)
+
+
 class iso _TestAttributeSerializationArrays is UnitTest
   fun name(): String => "Metrics/attribute_serialization_arrays"
 
