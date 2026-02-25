@@ -7,7 +7,7 @@ COMPILE_WITH := corral run -- ponyc
 BUILD_DIR ?= build/$(config)
 TEST_SRC_DIR := otel_test
 tests_binary := $(BUILD_DIR)/otel_test
-docs_dir := build/opentelemetry-pony-docs
+docs_dir := build/opentelemetry-docs
 
 ifdef config
 	ifeq (,$(filter $(config),debug release))

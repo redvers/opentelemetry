@@ -1,10 +1,10 @@
-# How to cut an opentelemetry-pony release
+# How to cut an opentelemetry release
 
 This document is aimed at members of the project who might be cutting a release. It serves as a checklist that can take you through doing a release step-by-step.
 
 ## Prerequisites
 
-You must have commit access to the opentelemetry-pony repository.
+You must have commit access to the opentelemetry repository.
 
 ## Releasing
 

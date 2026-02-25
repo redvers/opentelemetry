@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "opentelemetry-pony",
+    "name": "opentelemetry",
     "version": "0.1.0",
     "description": "OpenTelemetry implementation for Pony"
   },

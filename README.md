@@ -1,4 +1,4 @@
-# opentelemetry-pony
+# opentelemetry
 
 OpenTelemetry implementation for the Pony programming language. Provides tracing, metrics, and logs signals with OTLP HTTP/JSON export.
 
@@ -9,7 +9,7 @@ Under development.
 ## Installation
 
 * Install [corral](https://github.com/ponylang/corral)
-* `corral add github.com/ponylang/opentelemetry-pony.git --version 0.1.0`
+* `corral add github.com/ponylang/opentelemetry.git --version 0.1.0`
 * `corral fetch` to fetch your dependencies
 * `use "otel_api"` to include the API package (traits and types)
 * `use "otel_sdk"` to include the SDK package (concrete implementations)
