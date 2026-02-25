@@ -5,6 +5,7 @@ class val OtlpConfig
   let endpoint: String
   let traces_path: String
   let metrics_path: String
+  let logs_path: String
   let timeout_ms: U64
   let headers: Array[(String, String)] val
 
@@ -12,6 +13,7 @@ class val OtlpConfig
     endpoint': String = "http://localhost:4318",
     traces_path': String = "/v1/traces",
     metrics_path': String = "/v1/metrics",
+    logs_path': String = "/v1/logs",
     timeout_ms': U64 = 10000,
     headers': Array[(String, String)] val =
       recover val Array[(String, String)] end)
@@ -19,5 +21,6 @@ class val OtlpConfig
     endpoint = endpoint'
     traces_path = traces_path'
     metrics_path = metrics_path'
+    logs_path = logs_path'
     timeout_ms = timeout_ms'
     headers = headers'
