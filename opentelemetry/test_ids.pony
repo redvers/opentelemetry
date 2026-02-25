@@ -1,5 +1,5 @@
 use "pony_test"
-use otel_api = "../otel_api"
+use otel_api = "otel_api"
 
 class iso _TestTraceIdGenerate is UnitTest
   fun name(): String => "TraceId/generate"

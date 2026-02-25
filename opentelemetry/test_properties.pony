@@ -2,8 +2,8 @@ use "pony_test"
 use "pony_check"
 use "random"
 use "time"
-use otel_api = "../otel_api"
-use otel_sdk = "../otel_sdk"
+use otel_api = "otel_api"
+use otel_sdk = "otel_sdk"
 
 
 primitive _PropBytes

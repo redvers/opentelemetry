@@ -1,8 +1,8 @@
 use "pony_test"
 use "pony_check"
-use otel_api = "../otel_api"
-use otel_sdk = "../otel_sdk"
-use otel_otlp = "../otel_otlp"
+use otel_api = "otel_api"
+use otel_sdk = "otel_sdk"
+use otel_otlp = "otel_otlp"
 
 actor Main is TestList
   new create(env: Env) =>

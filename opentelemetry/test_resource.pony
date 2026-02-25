@@ -1,5 +1,5 @@
 use "pony_test"
-use otel_api = "../otel_api"
+use otel_api = "otel_api"
 
 class iso _TestResourceMerge is UnitTest
   fun name(): String => "Resource/merge"

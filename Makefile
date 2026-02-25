@@ -5,8 +5,8 @@ CLEAN_DEPENDENCIES_WITH := corral clean
 COMPILE_WITH := corral run -- ponyc
 
 BUILD_DIR ?= build/$(config)
-TEST_SRC_DIR := otel_test
-tests_binary := $(BUILD_DIR)/otel_test
+TEST_SRC_DIR := opentelemetry
+tests_binary := $(BUILD_DIR)/opentelemetry
 docs_dir := build/opentelemetry-docs
 
 ifdef config
@@ -33,7 +33,7 @@ ifeq (,$(filter $(MAKECMDGOALS),clean docs realclean TAGS))
   endif
 endif
 
-SOURCE_FILES := $(shell find otel_api otel_sdk otel_otlp otel_test -name \*.pony)
+SOURCE_FILES := $(shell find opentelemetry -name \*.pony)
 
 test: $(tests_binary)
 	$^
@@ -44,15 +44,15 @@ $(tests_binary): $(SOURCE_FILES) | $(BUILD_DIR)
 
 check-api: | $(BUILD_DIR)
 	${GET_DEPENDENCIES_WITH}
-	${PONYC} ${SSL} --pass=expr -o ${BUILD_DIR} otel_api
+	${PONYC} ${SSL} --pass=expr -o ${BUILD_DIR} opentelemetry/otel_api
 
 check-sdk: | $(BUILD_DIR)
 	${GET_DEPENDENCIES_WITH}
-	${PONYC} ${SSL} --pass=expr -o ${BUILD_DIR} otel_sdk
+	${PONYC} ${SSL} --pass=expr -o ${BUILD_DIR} opentelemetry/otel_sdk
 
 check-otlp: | $(BUILD_DIR)
 	${GET_DEPENDENCIES_WITH}
-	${PONYC} ${SSL} --pass=expr -o ${BUILD_DIR} otel_otlp
+	${PONYC} ${SSL} --pass=expr -o ${BUILD_DIR} opentelemetry/otel_otlp
 
 check: check-api check-sdk check-otlp
 
@@ -63,12 +63,12 @@ clean:
 $(docs_dir): $(SOURCE_FILES)
 	rm -rf $(docs_dir)
 	${GET_DEPENDENCIES_WITH}
-	${PONYC} --docs-public --pass=docs --output build otel_api
+	${PONYC} --docs-public --pass=docs --output build opentelemetry
 
 docs: $(docs_dir)
 
 TAGS:
-	ctags --recurse=yes otel_api otel_sdk otel_otlp
+	ctags --recurse=yes opentelemetry
 
 all: test
 

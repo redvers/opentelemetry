@@ -1,6 +1,6 @@
 use "pony_test"
-use otel_api = "../otel_api"
-use otel_sdk = "../otel_sdk"
+use otel_api = "otel_api"
+use otel_sdk = "otel_sdk"
 
 class iso _TestAlwaysOnSampler is UnitTest
   fun name(): String => "Sampler/always_on"

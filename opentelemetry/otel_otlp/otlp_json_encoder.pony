@@ -1,4 +1,4 @@
-use json = "../_corral/github_com_ponylang_json/json"
+use json = "../../_corral/github_com_ponylang_json/json"
 use "collections"
 use "format"
 use otel_api = "../otel_api"

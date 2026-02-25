@@ -5,9 +5,9 @@
     "description": "OpenTelemetry implementation for Pony"
   },
   "packages": [
-    "otel_api",
-    "otel_sdk",
-    "otel_otlp"
+    "opentelemetry/otel_api",
+    "opentelemetry/otel_sdk",
+    "opentelemetry/otel_otlp"
   ],
   "deps": [
     {

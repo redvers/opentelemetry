@@ -1,5 +1,5 @@
 use "net"
-use http = "../_corral/github_com_ponylang_http/http"
+use http = "../../_corral/github_com_ponylang_http/http"
 use otel_sdk = "../otel_sdk"
 
 actor OtlpSpanExporter is otel_sdk.SpanExporter

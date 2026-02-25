@@ -1,5 +1,5 @@
 use "net"
-use http = "../_corral/github_com_ponylang_http/http"
+use http = "../../_corral/github_com_ponylang_http/http"
 use otel_api = "../otel_api"
 use otel_sdk = "../otel_sdk"
 

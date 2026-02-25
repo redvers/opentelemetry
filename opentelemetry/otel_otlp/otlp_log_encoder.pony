@@ -1,5 +1,5 @@
 use "collections"
-use json = "../_corral/github_com_ponylang_json/json"
+use json = "../../_corral/github_com_ponylang_json/json"
 use otel_api = "../otel_api"
 use otel_sdk = "../otel_sdk"
 
