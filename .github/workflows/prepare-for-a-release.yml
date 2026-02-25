@@ -1,0 +1,89 @@
+name: Prepare for a release
+
+on:
+  push:
+    tags:
+      - 'release-[0-9]+.[0-9]+.[0-9]+'
+
+concurrency: prepare-for-a-release
+
+permissions:
+  packages: read
+  contents: write
+
+jobs:
+  pre-tagging:
+    name: Tasks run before tagging the release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: "main"
+          token: ${{ secrets.RELEASE_TOKEN }}
+      - name: Update CHANGELOG.md
+        uses: docker://ghcr.io/ponylang/release-bot-action:0.6.3
+        with:
+          entrypoint: update-changelog-for-release
+        env:
+          GIT_USER_NAME: "Ponylang Main Bot"
+          GIT_USER_EMAIL: "ponylang.main@gmail.com"
+      - name: Update VERSION
+        uses: docker://ghcr.io/ponylang/release-bot-action:0.6.3
+        with:
+          entrypoint: update-version-in-VERSION
+        env:
+          GIT_USER_NAME: "Ponylang Main Bot"
+          GIT_USER_EMAIL: "ponylang.main@gmail.com"
+      - name: Update version in README
+        uses: docker://ghcr.io/ponylang/release-bot-action:0.6.3
+        with:
+          entrypoint: update-version-in-README
+        env:
+          GIT_USER_NAME: "Ponylang Main Bot"
+          GIT_USER_EMAIL: "ponylang.main@gmail.com"
+      - name: Update corral.json
+        uses: docker://ghcr.io/ponylang/release-bot-action:0.6.3
+        with:
+          entrypoint: update-version-in-corral-json
+        env:
+          GIT_USER_NAME: "Ponylang Main Bot"
+          GIT_USER_EMAIL: "ponylang.main@gmail.com"
+
+  tag-release:
+    name: Tag the release
+    needs:
+      - pre-tagging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: "main"
+          token: ${{ secrets.RELEASE_TOKEN }}
+      - name: Trigger artefact creation
+        uses: docker://ghcr.io/ponylang/release-bot-action:0.6.3
+        with:
+          entrypoint: trigger-artefact-creation
+        env:
+          GIT_USER_NAME: "Ponylang Main Bot"
+          GIT_USER_EMAIL: "ponylang.main@gmail.com"
+
+  post-tagging:
+    name: Tasks run after tagging the release
+    needs:
+      - tag-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: "main"
+          token: ${{ secrets.RELEASE_TOKEN }}
+      - name: Add "unreleased" section to CHANGELOG.md
+        uses: docker://ghcr.io/ponylang/release-bot-action:0.6.3
+        with:
+          entrypoint: add-unreleased-section-to-changelog
+        env:
+          GIT_USER_NAME: "Ponylang Main Bot"
+          GIT_USER_EMAIL: "ponylang.main@gmail.com"

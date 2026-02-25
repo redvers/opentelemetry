@@ -4,6 +4,11 @@
     "version": "0.1.0",
     "description": "OpenTelemetry implementation for Pony"
   },
+  "packages": [
+    "otel_api",
+    "otel_sdk",
+    "otel_otlp"
+  ],
   "deps": [
     {
       "locator": "github.com/ponylang/http.git",

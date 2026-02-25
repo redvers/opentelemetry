@@ -1,2 +1,9 @@
+build/*
+TAGS
+tags
+.deps/*
+*.lib
+.vscode
+lock.json
 _corral/
 _repos/
