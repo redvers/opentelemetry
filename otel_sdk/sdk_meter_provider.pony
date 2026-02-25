@@ -63,6 +63,8 @@ class ref _InstrumentState
   let description: String
   let unit: String
   let kind: otel_api.InstrumentKind
+  let scope_name: String
+  let scope_version: String
 
   // Keyed by serialized attributes
   let sum_accumulators: Map[String, _SumAccumulator]
@@ -75,11 +77,15 @@ class ref _InstrumentState
   new ref create(
     description': String,
     unit': String,
-    kind': otel_api.InstrumentKind)
+    kind': otel_api.InstrumentKind,
+    scope_name': String = "",
+    scope_version': String = "")
   =>
     description = description'
     unit = unit'
     kind = kind'
+    scope_name = scope_name'
+    scope_version = scope_version'
     sum_accumulators = Map[String, _SumAccumulator]
     histogram_accumulators = Map[String, _HistogramAccumulator]
     gauge_accumulators = Map[String, _GaugeAccumulator]
@@ -114,14 +120,17 @@ actor SdkMeterProvider is otel_api.MeterProvider
     value: F64,
     attributes: otel_api.Attributes,
     description: String,
-    unit: String)
+    unit: String,
+    scope_name: String = "",
+    scope_version: String = "")
   =>
     if _is_shutdown then return end
 
     let state = try
       _instruments(instrument_name)?
     else
-      let s = _InstrumentState(description, unit, kind)
+      let s = _InstrumentState(description, unit, kind, scope_name,
+        scope_version)
       _instruments(instrument_name) = s
       s
     end
@@ -193,7 +202,8 @@ actor SdkMeterProvider is otel_api.MeterProvider
         end
         results.push(MetricData(
           name, state.description, state.unit,
-          otel_api.InstrumentKindCounter, consume points))
+          otel_api.InstrumentKindCounter, consume points,
+          state.scope_name, state.scope_version))
 
       | otel_api.InstrumentKindUpDownCounter =>
         let points = recover iso Array[NumberDataPoint val] end
@@ -206,7 +216,8 @@ actor SdkMeterProvider is otel_api.MeterProvider
         end
         results.push(MetricData(
           name, state.description, state.unit,
-          otel_api.InstrumentKindUpDownCounter, consume points))
+          otel_api.InstrumentKindUpDownCounter, consume points,
+          state.scope_name, state.scope_version))
 
       | otel_api.InstrumentKindHistogram =>
         let points = recover iso Array[HistogramDataPoint val] end
@@ -226,7 +237,8 @@ actor SdkMeterProvider is otel_api.MeterProvider
         end
         results.push(MetricData(
           name, state.description, state.unit,
-          otel_api.InstrumentKindHistogram, consume points))
+          otel_api.InstrumentKindHistogram, consume points,
+          state.scope_name, state.scope_version))
 
       | otel_api.InstrumentKindGauge =>
         let points = recover iso Array[NumberDataPoint val] end
@@ -239,7 +251,8 @@ actor SdkMeterProvider is otel_api.MeterProvider
         end
         results.push(MetricData(
           name, state.description, state.unit,
-          otel_api.InstrumentKindGauge, consume points))
+          otel_api.InstrumentKindGauge, consume points,
+          state.scope_name, state.scope_version))
       end
     end
 

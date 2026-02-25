@@ -79,6 +79,8 @@ class val SdkTracer is otel_api.Tracer
         provider._span_ended(ro)
       } val
 
+      let start_time = _WallClock.nanos()
+
       let span = SdkSpan(
         name,
         sc,
@@ -89,7 +91,18 @@ class val SdkTracer is otel_api.Tracer
         _version,
         _span_limits,
         on_finish,
-        attributes)
+        attributes,
+        start_time)
+
+      // Notify processors of span start with a snapshot
+      let start_snapshot = ReadOnlySpan(
+        name, sc, parent_span_id, kind,
+        start_time, 0,
+        otel_api.SpanStatus,
+        attributes,
+        recover val Array[otel_api.SpanEvent] end,
+        _resource, _name, _version)
+      _provider._span_started(start_snapshot)
 
       (span, child_ctx)
     end

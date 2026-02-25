@@ -1,3 +1,4 @@
+use "collections"
 use json = "../_corral/github_com_ponylang_json/json"
 use otel_api = "../otel_api"
 use otel_sdk = "../otel_sdk"
@@ -16,18 +17,50 @@ primitive OtlpMetricEncoder
     // Encode resource
     rm_obj.data("resource") = _encode_resource(resource)
 
-    // Build scopeMetrics — all metrics go under a single scope for now
-    let scope_metrics_arr = json.JsonArray
-    let sm_obj = json.JsonObject
-    sm_obj.data("scope") = json.JsonObject
-
-    let metrics_arr = json.JsonArray
+    // Group metrics by scope
+    let scope_groups = Map[String val, Array[otel_sdk.MetricData val]]
     for metric in metrics.values() do
-      metrics_arr.data.push(_encode_metric(metric))
+      let key: String val = recover val
+        let s = String
+        s.append(metric.scope_name)
+        s.push(0)
+        s.append(metric.scope_version)
+        s
+      end
+      let group = try
+        scope_groups(key)?
+      else
+        let g = Array[otel_sdk.MetricData val]
+        scope_groups(key) = g
+        g
+      end
+      group.push(metric)
     end
 
-    sm_obj.data("metrics") = metrics_arr
-    scope_metrics_arr.data.push(sm_obj)
+    let scope_metrics_arr = json.JsonArray
+    for (_, group) in scope_groups.pairs() do
+      let sm_obj = json.JsonObject
+
+      // Encode scope from first metric in group
+      try
+        let first = group(0)?
+        let scope_obj = json.JsonObject
+        scope_obj.data("name") = first.scope_name
+        if first.scope_version.size() > 0 then
+          scope_obj.data("version") = first.scope_version
+        end
+        sm_obj.data("scope") = scope_obj
+      end
+
+      let metrics_arr = json.JsonArray
+      for metric in group.values() do
+        metrics_arr.data.push(_encode_metric(metric))
+      end
+
+      sm_obj.data("metrics") = metrics_arr
+      scope_metrics_arr.data.push(sm_obj)
+    end
+
     rm_obj.data("scopeMetrics") = scope_metrics_arr
     resource_metrics_arr.data.push(rm_obj)
 

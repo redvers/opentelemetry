@@ -243,3 +243,78 @@ class iso _TestFullSpanPipeline is UnitTest
     } val
 
     provider.get_tracer("test-scope", cb, "0.1.0")
+
+
+class iso _TestSdkSpanAttributeTruncation is UnitTest
+  fun name(): String => "SdkSpan/attribute_truncation"
+
+  fun apply(h: TestHelper) =>
+    h.long_test(2_000_000_000)
+
+    let trace_id = otel_api.TraceId.generate()
+    let span_id = otel_api.SpanId.generate()
+    let sc = otel_api.SpanContext(trace_id, span_id)
+
+    let hh: TestHelper = h
+
+    let on_finish = {(ro: otel_sdk.ReadOnlySpan val)(hh) =>
+      try
+        // String attribute should be truncated to 5 bytes
+        (let k1, let v1) = ro.attributes(0)?
+        match v1
+        | let s: String =>
+          hh.assert_eq[USize](5, s.size(),
+            "String should be truncated to max_attribute_value_length")
+          hh.assert_eq[String]("hello", s)
+        else
+          hh.fail("Expected String attribute")
+        end
+
+        // I64 attribute should not be truncated
+        (let k2, let v2) = ro.attributes(1)?
+        match v2
+        | let i: I64 =>
+          hh.assert_eq[I64](999, i, "I64 should not be truncated")
+        else
+          hh.fail("Expected I64 attribute")
+        end
+
+        // String array attribute should have each item truncated
+        (let k3, let v3) = ro.attributes(2)?
+        match v3
+        | let arr: Array[String] val =>
+          hh.assert_eq[USize](2, arr.size())
+          try
+            hh.assert_eq[String]("abcde", arr(0)?,
+              "Array items should be truncated")
+            hh.assert_eq[String]("xy", arr(1)?,
+              "Short array items should be unchanged")
+          else
+            hh.fail("Could not read array items")
+          end
+        else
+          hh.fail("Expected Array[String] attribute")
+        end
+      else
+        hh.fail("Could not read attributes")
+      end
+      hh.complete(true)
+    } val
+
+    let limits = otel_sdk.SpanLimits(128, 128, 5)
+    let span = otel_sdk.SdkSpan(
+      "test-op",
+      sc,
+      otel_api.SpanId.invalid(),
+      otel_api.SpanKindInternal,
+      otel_api.Resource,
+      "test-lib",
+      "1.0.0",
+      limits,
+      on_finish)
+
+    span.set_attribute("str", "hello world")
+    span.set_attribute("num", I64(999))
+    let arr: Array[String] val = recover val ["abcdefgh"; "xy"] end
+    span.set_attribute("tags", arr)
+    span.finish()

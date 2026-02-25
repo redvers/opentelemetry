@@ -69,6 +69,7 @@ class val _OtlpHandlerFactory is http.HandlerFactory
 class ref _OtlpResponseHandler is http.HTTPHandler
   let _callback: {(otel_sdk.ExportResult)} val
   var _status: U16 = 0
+  var _done: Bool = false
 
   new ref create(callback: {(otel_sdk.ExportResult)} val) =>
     _callback = callback
@@ -76,15 +77,20 @@ class ref _OtlpResponseHandler is http.HTTPHandler
   fun ref apply(payload: http.Payload val): Any =>
     _status = payload.status
 
+  fun ref _complete(result: otel_sdk.ExportResult) =>
+    if _done then return end
+    _done = true
+    _callback(result)
+
   fun ref finished() =>
     if (_status >= 200) and (_status < 300) then
-      _callback(otel_sdk.ExportSuccess)
+      _complete(otel_sdk.ExportSuccess)
     else
-      _callback(otel_sdk.ExportFailure)
+      _complete(otel_sdk.ExportFailure)
     end
 
   fun ref cancelled() =>
-    _callback(otel_sdk.ExportFailure)
+    _complete(otel_sdk.ExportFailure)
 
   fun ref failed(reason: http.HTTPFailureReason) =>
-    _callback(otel_sdk.ExportFailure)
+    _complete(otel_sdk.ExportFailure)

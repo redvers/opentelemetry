@@ -46,6 +46,12 @@ actor SdkTracerProvider is otel_api.TracerProvider
 
     callback(tracer)
 
+  be _span_started(span: ReadOnlySpan val) =>
+    if _is_shutdown then return end
+    for processor in _processors.values() do
+      processor.on_start(span)
+    end
+
   be _span_ended(span: ReadOnlySpan val) =>
     if _is_shutdown then return end
     for processor in _processors.values() do

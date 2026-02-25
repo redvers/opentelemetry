@@ -17,19 +17,19 @@ class val SdkMeter is otel_api.Meter
   fun val counter(name: String, description: String = "",
     unit: String = ""): otel_api.Counter val
   =>
-    SdkCounter(_provider, name, description, unit)
+    SdkCounter(_provider, name, description, unit, _name, _version)
 
   fun val up_down_counter(name: String, description: String = "",
     unit: String = ""): otel_api.UpDownCounter val
   =>
-    SdkUpDownCounter(_provider, name, description, unit)
+    SdkUpDownCounter(_provider, name, description, unit, _name, _version)
 
   fun val histogram(name: String, description: String = "",
     unit: String = ""): otel_api.Histogram val
   =>
-    SdkHistogram(_provider, name, description, unit)
+    SdkHistogram(_provider, name, description, unit, _name, _version)
 
   fun val gauge(name: String, description: String = "",
     unit: String = ""): otel_api.Gauge val
   =>
-    SdkGauge(_provider, name, description, unit)
+    SdkGauge(_provider, name, description, unit, _name, _version)

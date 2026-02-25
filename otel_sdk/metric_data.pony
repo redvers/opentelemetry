@@ -66,6 +66,8 @@ class val MetricData
   let unit: String
   let kind: otel_api.InstrumentKind
   let data: MetricDataKind
+  let scope_name: String
+  let scope_version: String
 
   new val create(
     name': String,
@@ -73,10 +75,14 @@ class val MetricData
     unit': String = "",
     kind': otel_api.InstrumentKind = otel_api.InstrumentKindCounter,
     data': MetricDataKind =
-      recover val Array[NumberDataPoint val] end)
+      recover val Array[NumberDataPoint val] end,
+    scope_name': String = "",
+    scope_version': String = "")
   =>
     name = name'
     description = description'
     unit = unit'
     kind = kind'
     data = data'
+    scope_name = scope_name'
+    scope_version = scope_version'

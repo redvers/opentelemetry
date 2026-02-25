@@ -198,6 +198,72 @@ class iso _TestOtlpMetricEncoderHistogram is UnitTest
     end
 
 
+class iso _TestOtlpMetricEncoderScope is UnitTest
+  fun name(): String => "OtlpMetricEncoder/scope"
+
+  fun apply(h: TestHelper) ? =>
+    let points: Array[otel_sdk.NumberDataPoint val] val = recover val
+      [otel_sdk.NumberDataPoint(
+        recover val Array[(String, otel_api.AttributeValue)] end,
+        1000, 2000, 1.0)]
+    end
+
+    let metric = otel_sdk.MetricData(
+      "my.counter",
+      "A counter",
+      "1",
+      otel_api.InstrumentKindCounter,
+      points,
+      "my-library",
+      "2.0.0")
+
+    let metrics: Array[otel_sdk.MetricData val] val = recover val
+      [metric]
+    end
+
+    let json_str = otel_otlp.OtlpMetricEncoder.encode_metrics(metrics)
+
+    let doc = json.JsonDoc
+    doc.parse(json_str)?
+
+    match doc.data
+    | let root: json.JsonObject =>
+      match try root.data("resourceMetrics")? end
+      | let rm_arr: json.JsonArray =>
+        match try rm_arr.data(0)? end
+        | let rm_obj: json.JsonObject =>
+          match try rm_obj.data("scopeMetrics")? end
+          | let sm_arr: json.JsonArray =>
+            match try sm_arr.data(0)? end
+            | let sm_obj: json.JsonObject =>
+              match try sm_obj.data("scope")? end
+              | let scope_obj: json.JsonObject =>
+                match try scope_obj.data("name")? end
+                | let n: String =>
+                  h.assert_eq[String]("my-library", n,
+                    "Scope name should match")
+                else h.fail("scope name should be a string")
+                end
+                match try scope_obj.data("version")? end
+                | let v: String =>
+                  h.assert_eq[String]("2.0.0", v,
+                    "Scope version should match")
+                else h.fail("scope version should be a string")
+                end
+              else h.fail("Expected scope object")
+              end
+            else h.fail("Expected scopeMetrics object")
+            end
+          else h.fail("Expected scopeMetrics array")
+          end
+        else h.fail("Expected resourceMetrics object")
+        end
+      else h.fail("Expected resourceMetrics array")
+      end
+    else h.fail("Expected top-level JSON object")
+    end
+
+
 class iso _TestOtlpMetricEncoderGauge is UnitTest
   fun name(): String => "OtlpMetricEncoder/gauge"
 

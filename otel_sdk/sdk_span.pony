@@ -31,13 +31,14 @@ class ref SdkSpan is otel_api.Span
     limits': SpanLimits,
     on_finish': {(ReadOnlySpan val)} val,
     initial_attributes: Array[(String, otel_api.AttributeValue)] val =
-      recover val Array[(String, otel_api.AttributeValue)] end)
+      recover val Array[(String, otel_api.AttributeValue)] end,
+    start_time': U64 = 0)
   =>
     _name = name'
     _span_context = span_context'
     _parent_span_id = parent_span_id'
     _kind = kind'
-    _start_time = _WallClock.nanos()
+    _start_time = if start_time' > 0 then start_time' else _WallClock.nanos() end
     _status = otel_api.SpanStatus
     _attributes = Array[(String, otel_api.AttributeValue)]
     _events = Array[otel_api.SpanEvent]
@@ -48,26 +49,49 @@ class ref SdkSpan is otel_api.Span
     _on_finish = on_finish'
     for (k, v) in initial_attributes.values() do
       if _attributes.size() < _limits.max_attributes then
-        _attributes.push((k, v))
+        _attributes.push((k, _truncate_value(v)))
       end
     end
 
   fun ref set_attribute(key: String, value: otel_api.AttributeValue) =>
     if _finished then return end
+    let truncated = _truncate_value(value)
     // Replace existing key if found
     try
       var i: USize = 0
       while i < _attributes.size() do
         (let k, _) = _attributes(i)?
         if k == key then
-          _attributes(i)? = (key, value)
+          _attributes(i)? = (key, truncated)
           return
         end
         i = i + 1
       end
     end
     if _attributes.size() < _limits.max_attributes then
-      _attributes.push((key, value))
+      _attributes.push((key, truncated))
+    end
+
+  fun _truncate_value(value: otel_api.AttributeValue)
+    : otel_api.AttributeValue
+  =>
+    let max = _limits.max_attribute_value_length
+    if max == 0 then return value end
+    match value
+    | let s: String =>
+      if s.size() > max then s.trim(0, max) else s end
+    | let arr: Array[String] val =>
+      let truncated = recover iso Array[String] end
+      for item in arr.values() do
+        if item.size() > max then
+          truncated.push(item.trim(0, max))
+        else
+          truncated.push(item)
+        end
+      end
+      consume truncated
+    else
+      value
     end
 
   fun ref add_event(

@@ -12,17 +12,23 @@ class val SdkCounter is otel_api.Counter
   let _name: String
   let _description: String
   let _unit: String
+  let _scope_name: String
+  let _scope_version: String
 
   new val create(
     provider: SdkMeterProvider tag,
     name': String,
     description': String = "",
-    unit': String = "")
+    unit': String = "",
+    scope_name': String = "",
+    scope_version': String = "")
   =>
     _provider = provider
     _name = name'
     _description = description'
     _unit = unit'
+    _scope_name = scope_name'
+    _scope_version = scope_version'
 
   fun val add(value: otel_api.MetricValue,
     attributes: otel_api.Attributes =
@@ -33,7 +39,7 @@ class val SdkCounter is otel_api.Counter
     if v < 0 then return end
     _provider._record_measurement(
       _name, otel_api.InstrumentKindCounter, v,
-      attributes, _description, _unit)
+      attributes, _description, _unit, _scope_name, _scope_version)
 
 
 class val SdkUpDownCounter is otel_api.UpDownCounter
@@ -41,17 +47,23 @@ class val SdkUpDownCounter is otel_api.UpDownCounter
   let _name: String
   let _description: String
   let _unit: String
+  let _scope_name: String
+  let _scope_version: String
 
   new val create(
     provider: SdkMeterProvider tag,
     name': String,
     description': String = "",
-    unit': String = "")
+    unit': String = "",
+    scope_name': String = "",
+    scope_version': String = "")
   =>
     _provider = provider
     _name = name'
     _description = description'
     _unit = unit'
+    _scope_name = scope_name'
+    _scope_version = scope_version'
 
   fun val add(value: otel_api.MetricValue,
     attributes: otel_api.Attributes =
@@ -60,7 +72,7 @@ class val SdkUpDownCounter is otel_api.UpDownCounter
     _provider._record_measurement(
       _name, otel_api.InstrumentKindUpDownCounter,
       _MetricValueConvert.to_f64(value),
-      attributes, _description, _unit)
+      attributes, _description, _unit, _scope_name, _scope_version)
 
 
 class val SdkHistogram is otel_api.Histogram
@@ -68,17 +80,23 @@ class val SdkHistogram is otel_api.Histogram
   let _name: String
   let _description: String
   let _unit: String
+  let _scope_name: String
+  let _scope_version: String
 
   new val create(
     provider: SdkMeterProvider tag,
     name': String,
     description': String = "",
-    unit': String = "")
+    unit': String = "",
+    scope_name': String = "",
+    scope_version': String = "")
   =>
     _provider = provider
     _name = name'
     _description = description'
     _unit = unit'
+    _scope_name = scope_name'
+    _scope_version = scope_version'
 
   fun val record(value: otel_api.MetricValue,
     attributes: otel_api.Attributes =
@@ -87,7 +105,7 @@ class val SdkHistogram is otel_api.Histogram
     _provider._record_measurement(
       _name, otel_api.InstrumentKindHistogram,
       _MetricValueConvert.to_f64(value),
-      attributes, _description, _unit)
+      attributes, _description, _unit, _scope_name, _scope_version)
 
 
 class val SdkGauge is otel_api.Gauge
@@ -95,17 +113,23 @@ class val SdkGauge is otel_api.Gauge
   let _name: String
   let _description: String
   let _unit: String
+  let _scope_name: String
+  let _scope_version: String
 
   new val create(
     provider: SdkMeterProvider tag,
     name': String,
     description': String = "",
-    unit': String = "")
+    unit': String = "",
+    scope_name': String = "",
+    scope_version': String = "")
   =>
     _provider = provider
     _name = name'
     _description = description'
     _unit = unit'
+    _scope_name = scope_name'
+    _scope_version = scope_version'
 
   fun val record(value: otel_api.MetricValue,
     attributes: otel_api.Attributes =
@@ -114,4 +138,4 @@ class val SdkGauge is otel_api.Gauge
     _provider._record_measurement(
       _name, otel_api.InstrumentKindGauge,
       _MetricValueConvert.to_f64(value),
-      attributes, _description, _unit)
+      attributes, _description, _unit, _scope_name, _scope_version)
