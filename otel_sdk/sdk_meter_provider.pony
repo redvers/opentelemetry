@@ -126,6 +126,9 @@ actor SdkMeterProvider is otel_api.MeterProvider
       s
     end
 
+    // Reject measurements whose kind doesn't match the registered instrument
+    if not _same_kind(state.kind, kind) then return end
+
     let attr_key = _serialize_attributes(attributes)
     if not state.attributes_by_key.contains(attr_key) then
       state.attributes_by_key(attr_key) = attributes
@@ -250,6 +253,17 @@ actor SdkMeterProvider is otel_api.MeterProvider
     _is_shutdown = true
     callback(true)
 
+  fun tag _same_kind(a: otel_api.InstrumentKind, b: otel_api.InstrumentKind)
+    : Bool
+  =>
+    match (a, b)
+    | (otel_api.InstrumentKindCounter, otel_api.InstrumentKindCounter) => true
+    | (otel_api.InstrumentKindUpDownCounter, otel_api.InstrumentKindUpDownCounter) => true
+    | (otel_api.InstrumentKindHistogram, otel_api.InstrumentKindHistogram) => true
+    | (otel_api.InstrumentKindGauge, otel_api.InstrumentKindGauge) => true
+    else false
+    end
+
   fun tag _serialize_attributes(attrs: otel_api.Attributes): String =>
     if attrs.size() == 0 then return "" end
     let parts = recover iso String end
@@ -262,8 +276,42 @@ actor SdkMeterProvider is otel_api.MeterProvider
       | let b: Bool => parts.append(b.string())
       | let i: I64 => parts.append(i.string())
       | let f: F64 => parts.append(f.string())
-      else
-        parts.append("?")
+      | let arr: Array[String] val =>
+        parts.append("[")
+        var first = true
+        for item in arr.values() do
+          if not first then parts.append(";") end
+          parts.append(item)
+          first = false
+        end
+        parts.append("]")
+      | let arr: Array[Bool] val =>
+        parts.append("[")
+        var first = true
+        for item in arr.values() do
+          if not first then parts.append(";") end
+          parts.append(item.string())
+          first = false
+        end
+        parts.append("]")
+      | let arr: Array[I64] val =>
+        parts.append("[")
+        var first = true
+        for item in arr.values() do
+          if not first then parts.append(";") end
+          parts.append(item.string())
+          first = false
+        end
+        parts.append("]")
+      | let arr: Array[F64] val =>
+        parts.append("[")
+        var first = true
+        for item in arr.values() do
+          if not first then parts.append(";") end
+          parts.append(item.string())
+          first = false
+        end
+        parts.append("]")
       end
     end
     consume parts

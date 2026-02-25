@@ -43,3 +43,7 @@ actor Main is TestList
     test(_TestOtlpMetricEncoderSum)
     test(_TestOtlpMetricEncoderHistogram)
     test(_TestOtlpMetricEncoderGauge)
+    test(_TestCounterRejectsNegative)
+    test(_TestInstrumentKindConflict)
+    test(_TestResourceGrouping)
+    test(_TestAttributeSerializationArrays)

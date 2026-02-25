@@ -21,8 +21,11 @@ class val SdkCounter is otel_api.Counter
     attributes: otel_api.Attributes =
       recover val Array[(String, otel_api.AttributeValue)] end)
   =>
+    // Per OTel spec: Counter rejects negative values
+    let v = _to_f64(value)
+    if v < 0 then return end
     _provider._record_measurement(
-      _name, otel_api.InstrumentKindCounter, _to_f64(value),
+      _name, otel_api.InstrumentKindCounter, v,
       attributes, _description, _unit)
 
   fun tag _to_f64(value: otel_api.MetricValue): F64 =>

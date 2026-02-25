@@ -65,12 +65,12 @@ primitive OtlpJsonEncoder
     : Map[String, Map[String, Array[otel_sdk.ReadOnlySpan val]]]
   =>
     """
-    Group spans by resource key and scope key for OTLP structure.
-    Uses schema_url as resource key and scope name+version as scope key.
+    Group spans by resource identity and scope key for OTLP structure.
+    Resource identity includes both schema_url and all attributes.
     """
     let grouped = Map[String, Map[String, Array[otel_sdk.ReadOnlySpan val]]]
     for span in spans.values() do
-      let resource_key: String val = span.resource.schema_url
+      let resource_key: String val = _resource_key(span.resource)
       let scope_key: String val =
         recover val
           let s = String
@@ -99,6 +99,27 @@ primitive OtlpJsonEncoder
       span_list.push(span)
     end
     grouped
+
+  fun _resource_key(resource: otel_api.Resource): String val =>
+    recover val
+      let s = String
+      s.append(resource.schema_url)
+      s.append("|")
+      for (k, v) in resource.attributes().values() do
+        s.append(k)
+        s.append("=")
+        match v
+        | let sv: String => s.append(sv)
+        | let bv: Bool => s.append(bv.string())
+        | let iv: I64 => s.append(iv.string())
+        | let fv: F64 => s.append(fv.string())
+        else
+          s.append("?")
+        end
+        s.append(",")
+      end
+      s
+    end
 
   fun _encode_resource(resource: otel_api.Resource): json.JsonObject =>
     let obj = json.JsonObject

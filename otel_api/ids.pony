@@ -14,7 +14,10 @@ class val TraceId
   new val generate() =>
     _bytes = recover val
       let buf = Array[U8].init(0, 16)
-      @getrandom(buf.cpointer(), 16, 0)
+      // Retry until getrandom succeeds (returns requested byte count)
+      while @getrandom(buf.cpointer(), 16, 0) != 16 do
+        None
+      end
       buf
     end
 
@@ -80,7 +83,10 @@ class val SpanId
   new val generate() =>
     _bytes = recover val
       let buf = Array[U8].init(0, 8)
-      @getrandom(buf.cpointer(), 8, 0)
+      // Retry until getrandom succeeds (returns requested byte count)
+      while @getrandom(buf.cpointer(), 8, 0) != 8 do
+        None
+      end
       buf
     end
 

@@ -33,33 +33,60 @@ actor BatchSpanProcessor is SpanProcessor
     if _is_shutdown then return end
     _batch.push(span)
     if _batch.size() >= _max_batch_size then
-      _flush()
+      _flush(None)
     end
 
   be shutdown(callback: {(Bool)} val) =>
     _is_shutdown = true
-    _flush()
     _timers.dispose()
-    _exporter.shutdown(callback)
+    let exporter = _exporter
+    if _batch.size() == 0 then
+      exporter.shutdown(callback)
+    else
+      // Flush remaining spans, then shut down the exporter after export completes
+      _flush(
+        {(result: ExportResult)(exporter, callback) =>
+          exporter.shutdown(callback)
+        } val)
+    end
 
   be force_flush(callback: {(Bool)} val) =>
-    _flush()
-    callback(true)
+    if _batch.size() == 0 then
+      callback(true)
+    else
+      _flush(
+        {(result: ExportResult)(callback) =>
+          match result
+          | ExportSuccess => callback(true)
+          | ExportFailure => callback(false)
+          end
+        } val)
+    end
 
   be _timer_fired() =>
     if _is_shutdown then return end
-    _flush()
+    _flush(None)
     _start_timer()
 
-  fun ref _flush() =>
-    if _batch.size() == 0 then return end
+  fun ref _flush(on_complete: ({(ExportResult)} val | None)) =>
+    if _batch.size() == 0 then
+      match on_complete
+      | let cb: {(ExportResult)} val => cb(ExportSuccess)
+      end
+      return
+    end
     let arr = recover iso Array[ReadOnlySpan val] end
     for span in _batch.values() do
       arr.push(span)
     end
     let to_export: Array[ReadOnlySpan val] val = consume arr
     _batch = Array[ReadOnlySpan val]
-    _exporter.export_spans(to_export, {(result: ExportResult) => None })
+    match on_complete
+    | let cb: {(ExportResult)} val =>
+      _exporter.export_spans(to_export, cb)
+    | None =>
+      _exporter.export_spans(to_export, {(result: ExportResult) => None})
+    end
 
   fun ref _start_timer() =>
     let self: BatchSpanProcessor tag = this
