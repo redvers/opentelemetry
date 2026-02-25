@@ -1,5 +1,6 @@
 use json = "../_corral/github_com_ponylang_json/json"
 use "collections"
+use "format"
 use otel_api = "../otel_api"
 use otel_sdk = "../otel_sdk"
 
@@ -110,7 +111,7 @@ primitive OtlpJsonEncoder
       | let sv: String => entry.append(sv)
       | let bv: Bool => entry.append(bv.string())
       | let iv: I64 => entry.append(iv.string())
-      | let fv: F64 => entry.append(fv.string())
+      | let fv: F64 => entry.append(Format.float[F64](fv where prec = 15))
       | let arr: Array[String] val =>
         entry.append("[")
         var first = true
@@ -143,7 +144,7 @@ primitive OtlpJsonEncoder
         var first = true
         for item in arr.values() do
           if not first then entry.append(";") end
-          entry.append(item.string())
+          entry.append(Format.float[F64](item where prec = 15))
           first = false
         end
         entry.append("]")

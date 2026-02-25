@@ -1,3 +1,4 @@
+use "format"
 use otel_api = "../otel_api"
 
 primitive SamplingDecisionDrop
@@ -100,7 +101,7 @@ class val TraceIdRatioSampler is Sampler
       SamplingResult(SamplingDecisionDrop)
     end
 
-  fun val description(): String => "TraceIdRatioSampler{" + _ratio.string() + "}"
+  fun val description(): String => "TraceIdRatioSampler{" + Format.float[F64](_ratio where prec = 15) + "}"
 
   fun val _trace_id_to_u64(trace_id: otel_api.TraceId): U64 =>
     """

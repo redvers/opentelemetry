@@ -1,4 +1,5 @@
 use "pony_test"
+use "pony_check"
 use otel_api = "../otel_api"
 use otel_sdk = "../otel_sdk"
 use otel_otlp = "../otel_otlp"
@@ -50,3 +51,13 @@ actor Main is TestList
     test(_TestAttributeSerializationArrays)
     test(_TestTraceIdRatioSamplerMidrange)
     test(_TestFullSpanPipeline)
+    test(_TestPropTraceIdHex)
+    test(_TestPropIdValidity)
+    test(_TestPropIdEquality)
+    test(_TestPropIsSampled)
+    test(_TestPropAlwaysOnSampler)
+    test(_TestPropAlwaysOffSampler)
+    test(_TestPropRatioSamplerDeterminism)
+    test(_TestPropCounterLinearity)
+    test(_TestPropGaugeLastValue)
+    test(_TestPropAttributePermutation)

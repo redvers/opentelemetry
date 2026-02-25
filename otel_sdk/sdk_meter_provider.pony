@@ -1,4 +1,5 @@
 use "collections"
+use "format"
 use otel_api = "../otel_api"
 
 
@@ -275,7 +276,7 @@ actor SdkMeterProvider is otel_api.MeterProvider
       | let s: String => entry.append(s)
       | let b: Bool => entry.append(b.string())
       | let i: I64 => entry.append(i.string())
-      | let f: F64 => entry.append(f.string())
+      | let f: F64 => entry.append(Format.float[F64](f where prec = 15))
       | let arr: Array[String] val =>
         entry.append("[")
         var first = true
@@ -308,7 +309,7 @@ actor SdkMeterProvider is otel_api.MeterProvider
         var first = true
         for item in arr.values() do
           if not first then entry.append(";") end
-          entry.append(item.string())
+          entry.append(Format.float[F64](item where prec = 15))
           first = false
         end
         entry.append("]")
