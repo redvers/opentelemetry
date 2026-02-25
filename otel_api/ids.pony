@@ -1,3 +1,4 @@
+use "format"
 use @getrandom[ISize](buf: Pointer[U8] tag, buflen: USize, flags: U32)
 
 class val TraceId
@@ -41,9 +42,8 @@ class val TraceId
     try
       var i: USize = 0
       while i < 16 do
-        let b = _bytes(i)?
-        s.push(_hex_digit(b >> 4))
-        s.push(_hex_digit(b and 0x0F))
+        s.append(Format.int[U8](_bytes(i)?
+          where fmt = FormatHexSmallBare, width = 2, fill = '0'))
         i = i + 1
       end
     end
@@ -62,9 +62,6 @@ class val TraceId
     end
 
   fun val ne(other: TraceId): Bool => not eq(other)
-
-  fun tag _hex_digit(v: U8): U8 =>
-    if v < 10 then '0' + v else 'a' + (v - 10) end
 
   fun val string(): String iso^ => hex().clone()
 
@@ -110,9 +107,8 @@ class val SpanId
     try
       var i: USize = 0
       while i < 8 do
-        let b = _bytes(i)?
-        s.push(_hex_digit(b >> 4))
-        s.push(_hex_digit(b and 0x0F))
+        s.append(Format.int[U8](_bytes(i)?
+          where fmt = FormatHexSmallBare, width = 2, fill = '0'))
         i = i + 1
       end
     end
@@ -131,9 +127,6 @@ class val SpanId
     end
 
   fun val ne(other: SpanId): Bool => not eq(other)
-
-  fun tag _hex_digit(v: U8): U8 =>
-    if v < 10 then '0' + v else 'a' + (v - 10) end
 
   fun val string(): String iso^ => hex().clone()
 
