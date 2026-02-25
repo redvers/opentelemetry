@@ -83,5 +83,8 @@ class ref _OtlpResponseHandler is http.HTTPHandler
       _callback(otel_sdk.ExportFailure)
     end
 
+  fun ref cancelled() =>
+    _callback(otel_sdk.ExportFailure)
+
   fun ref failed(reason: http.HTTPFailureReason) =>
     _callback(otel_sdk.ExportFailure)

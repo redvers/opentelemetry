@@ -247,3 +247,48 @@ class iso _TestAttributeSerializationArrays is UnitTest
         hh.complete(true)
       } val)
     } val)
+
+
+class iso _TestAttributeSerializationDelimiters is UnitTest
+  fun name(): String => "Metrics/attribute_serialization_delimiters"
+
+  fun apply(h: TestHelper) =>
+    h.long_test(2_000_000_000)
+
+    let provider = otel_sdk.SdkMeterProvider
+    let hh: TestHelper = h
+
+    provider.get_meter("test", {(meter: otel_api.Meter val)(provider, hh) =>
+      let counter = meter.counter("delim_test")
+
+      // These would collide under naive key=value serialization
+      let attrs_a: otel_api.Attributes = recover val
+        let a = Array[(String, otel_api.AttributeValue)]
+        a.push(("x", "y=z"))
+        a
+      end
+      let attrs_b: otel_api.Attributes = recover val
+        let a = Array[(String, otel_api.AttributeValue)]
+        a.push(("x=y", "z"))
+        a
+      end
+
+      counter.add(I64(1), attrs_a)
+      counter.add(I64(2), attrs_b)
+
+      provider.collect({(metrics: Array[otel_sdk.MetricData val] val)(hh) =>
+        try
+          let m = metrics(0)?
+          match m.data
+          | let points: Array[otel_sdk.NumberDataPoint val] val =>
+            hh.assert_eq[USize](2, points.size(),
+              "Attributes with delimiters in keys/values must not collide")
+          else
+            hh.fail("Expected NumberDataPoint array")
+          end
+        else
+          hh.fail("Could not read metric")
+        end
+        hh.complete(true)
+      } val)
+    } val)

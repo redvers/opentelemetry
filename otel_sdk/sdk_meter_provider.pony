@@ -265,64 +265,81 @@ actor SdkMeterProvider is otel_api.MeterProvider
     end
 
   fun tag _serialize_attributes(attrs: otel_api.Attributes): String =>
+    """
+    Collision-free serialization using length-prefixed encoding.
+    Each entry: {len(key)}:{key}{type_tag}{len(value_str)}:{value_str}
+    Entries are sorted then concatenated (self-delimiting via length prefixes).
+    """
     if attrs.size() == 0 then return "" end
-    // Serialize each entry, then sort for order-independent identity
     let entries = Array[String](attrs.size())
     for (k, v) in attrs.values() do
       let entry = recover iso String end
+      entry.append(k.size().string())
+      entry.append(":")
       entry.append(k)
-      entry.append("=")
       match v
-      | let s: String => entry.append(s)
-      | let b: Bool => entry.append(b.string())
-      | let i: I64 => entry.append(i.string())
-      | let f: F64 => entry.append(Format.float[F64](f where prec = 15))
+      | let s: String =>
+        entry.append("s")
+        entry.append(s.size().string())
+        entry.append(":")
+        entry.append(s)
+      | let b: Bool =>
+        entry.append(if b then "bt" else "bf" end)
+      | let i: I64 =>
+        let is' = i.string()
+        entry.append("i")
+        entry.append(is'.size().string())
+        entry.append(":")
+        entry.append(consume is')
+      | let f: F64 =>
+        let fs = Format.float[F64](f where prec = 15)
+        entry.append("f")
+        entry.append(fs.size().string())
+        entry.append(":")
+        entry.append(consume fs)
       | let arr: Array[String] val =>
-        entry.append("[")
-        var first = true
+        entry.append("S")
+        entry.append(arr.size().string())
+        entry.append(":")
         for item in arr.values() do
-          if not first then entry.append(";") end
+          entry.append(item.size().string())
+          entry.append(":")
           entry.append(item)
-          first = false
         end
-        entry.append("]")
       | let arr: Array[Bool] val =>
-        entry.append("[")
-        var first = true
+        entry.append("B")
+        entry.append(arr.size().string())
+        entry.append(":")
         for item in arr.values() do
-          if not first then entry.append(";") end
-          entry.append(item.string())
-          first = false
+          entry.append(if item then "1" else "0" end)
         end
-        entry.append("]")
       | let arr: Array[I64] val =>
-        entry.append("[")
-        var first = true
+        entry.append("I")
+        entry.append(arr.size().string())
+        entry.append(":")
         for item in arr.values() do
-          if not first then entry.append(";") end
-          entry.append(item.string())
-          first = false
+          let is' = item.string()
+          entry.append(is'.size().string())
+          entry.append(":")
+          entry.append(consume is')
         end
-        entry.append("]")
       | let arr: Array[F64] val =>
-        entry.append("[")
-        var first = true
+        entry.append("F")
+        entry.append(arr.size().string())
+        entry.append(":")
         for item in arr.values() do
-          if not first then entry.append(";") end
-          entry.append(Format.float[F64](item where prec = 15))
-          first = false
+          let fs = Format.float[F64](item where prec = 15)
+          entry.append(fs.size().string())
+          entry.append(":")
+          entry.append(consume fs)
         end
-        entry.append("]")
       end
       entries.push(consume entry)
     end
     Sort[Array[String], String](entries)
     let result = recover iso String end
-    var first = true
     for entry in entries.values() do
-      if not first then result.append(",") end
       result.append(entry)
-      first = false
     end
     consume result
 

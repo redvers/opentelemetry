@@ -75,8 +75,10 @@ primitive OtlpJsonEncoder
       let scope_key: String val =
         recover val
           let s = String
-          s.append(span.instrumentation_scope_name)
+          let sn = span.instrumentation_scope_name
+          s.append(sn.size().string())
           s.append(":")
+          s.append(sn)
           s.append(span.instrumentation_scope_version)
           s
         end
@@ -102,62 +104,82 @@ primitive OtlpJsonEncoder
     grouped
 
   fun _resource_key(resource: otel_api.Resource): String val =>
+    """
+    Collision-free resource identity using length-prefixed encoding.
+    """
     let entries = Array[String](resource.attributes().size())
     for (k, v) in resource.attributes().values() do
       let entry = recover iso String end
+      entry.append(k.size().string())
+      entry.append(":")
       entry.append(k)
-      entry.append("=")
       match v
-      | let sv: String => entry.append(sv)
-      | let bv: Bool => entry.append(bv.string())
-      | let iv: I64 => entry.append(iv.string())
-      | let fv: F64 => entry.append(Format.float[F64](fv where prec = 15))
+      | let sv: String =>
+        entry.append("s")
+        entry.append(sv.size().string())
+        entry.append(":")
+        entry.append(sv)
+      | let bv: Bool =>
+        entry.append(if bv then "bt" else "bf" end)
+      | let iv: I64 =>
+        let is' = iv.string()
+        entry.append("i")
+        entry.append(is'.size().string())
+        entry.append(":")
+        entry.append(consume is')
+      | let fv: F64 =>
+        let fs = Format.float[F64](fv where prec = 15)
+        entry.append("f")
+        entry.append(fs.size().string())
+        entry.append(":")
+        entry.append(consume fs)
       | let arr: Array[String] val =>
-        entry.append("[")
-        var first = true
+        entry.append("S")
+        entry.append(arr.size().string())
+        entry.append(":")
         for item in arr.values() do
-          if not first then entry.append(";") end
+          entry.append(item.size().string())
+          entry.append(":")
           entry.append(item)
-          first = false
         end
-        entry.append("]")
       | let arr: Array[Bool] val =>
-        entry.append("[")
-        var first = true
+        entry.append("B")
+        entry.append(arr.size().string())
+        entry.append(":")
         for item in arr.values() do
-          if not first then entry.append(";") end
-          entry.append(item.string())
-          first = false
+          entry.append(if item then "1" else "0" end)
         end
-        entry.append("]")
       | let arr: Array[I64] val =>
-        entry.append("[")
-        var first = true
+        entry.append("I")
+        entry.append(arr.size().string())
+        entry.append(":")
         for item in arr.values() do
-          if not first then entry.append(";") end
-          entry.append(item.string())
-          first = false
+          let is' = item.string()
+          entry.append(is'.size().string())
+          entry.append(":")
+          entry.append(consume is')
         end
-        entry.append("]")
       | let arr: Array[F64] val =>
-        entry.append("[")
-        var first = true
+        entry.append("F")
+        entry.append(arr.size().string())
+        entry.append(":")
         for item in arr.values() do
-          if not first then entry.append(";") end
-          entry.append(Format.float[F64](item where prec = 15))
-          first = false
+          let fs = Format.float[F64](item where prec = 15)
+          entry.append(fs.size().string())
+          entry.append(":")
+          entry.append(consume fs)
         end
-        entry.append("]")
       end
       entries.push(consume entry)
     end
     Sort[Array[String], String](entries)
     let s = recover iso String end
-    s.append(resource.schema_url)
-    s.append("|")
+    let schema = resource.schema_url
+    s.append(schema.size().string())
+    s.append(":")
+    s.append(schema)
     for entry in entries.values() do
       s.append(entry)
-      s.append(",")
     end
     consume s
 
