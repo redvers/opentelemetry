@@ -22,8 +22,10 @@ primitive OtlpMetricEncoder
     for metric in metrics.values() do
       let key: String val = recover val
         let s = String
-        s.append(metric.scope_name)
-        s.push(0)
+        let sn = metric.scope_name
+        s.append(sn.size().string())
+        s.append(":")
+        s.append(sn)
         s.append(metric.scope_version)
         s
       end

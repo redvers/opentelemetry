@@ -95,14 +95,56 @@ class val SdkTracer is otel_api.Tracer
         start_time)
 
       // Notify processors of span start with a snapshot
+      // Apply span limits to attributes (matching what SdkSpan does internally)
+      let limited_attrs = _limit_attributes(attributes)
       let start_snapshot = ReadOnlySpan(
         name, sc, parent_span_id, kind,
         start_time, 0,
         otel_api.SpanStatus,
-        attributes,
+        limited_attrs,
         recover val Array[otel_api.SpanEvent] end,
         _resource, _name, _version)
       _provider._span_started(start_snapshot)
 
       (span, child_ctx)
+    end
+
+  fun val _limit_attributes(attributes: otel_api.Attributes)
+    : otel_api.Attributes
+  =>
+    let max_a = _span_limits.max_attributes
+    let max_len = _span_limits.max_attribute_value_length
+    recover val
+      let arr = Array[(String, otel_api.AttributeValue)]
+      for (k, v) in attributes.values() do
+        if arr.size() >= max_a then break end
+        if max_len > 0 then
+          match v
+          | let s: String =>
+            if s.size() > max_len then
+              arr.push((k, s.trim(0, max_len)))
+            else
+              arr.push((k, v))
+            end
+          | let sa: Array[String] val =>
+            let ta: Array[String] val = recover val
+              let t = Array[String]
+              for item in sa.values() do
+                if item.size() > max_len then
+                  t.push(item.trim(0, max_len))
+                else
+                  t.push(item)
+                end
+              end
+              t
+            end
+            arr.push((k, ta))
+          else
+            arr.push((k, v))
+          end
+        else
+          arr.push((k, v))
+        end
+      end
+      arr
     end
