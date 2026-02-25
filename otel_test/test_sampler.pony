@@ -68,3 +68,26 @@ class iso _TestTraceIdRatioSampler is UnitTest
       i = i + 1
     end
     h.assert_eq[USize](100, sampled, "Ratio 1.0 should sample all spans")
+
+
+class iso _TestTraceIdRatioSamplerMidrange is UnitTest
+  fun name(): String => "Sampler/trace_id_ratio_midrange"
+
+  fun apply(h: TestHelper) =>
+    let sampler: otel_sdk.TraceIdRatioSampler val =
+      otel_sdk.TraceIdRatioSampler(0.5)
+    let ctx = otel_api.Context
+    var sampled: USize = 0
+    var i: USize = 0
+    while i < 1000 do
+      let tid = otel_api.TraceId.generate()
+      let result = sampler.should_sample(ctx, tid, "test",
+        otel_api.SpanKindInternal)
+      match result.decision
+      | otel_sdk.SamplingDecisionRecordAndSample => sampled = sampled + 1
+      end
+      i = i + 1
+    end
+    h.assert_true((sampled >= 350) and (sampled <= 650),
+      "Ratio 0.5 over 1000 traces should sample between 350 and 650, got " +
+        sampled.string())

@@ -64,7 +64,8 @@ class val SdkTracer is otel_api.Tracer
       else 0
       end
 
-      let sc = otel_api.SpanContext(trace_id, span_id, trace_flags)
+      let sc = otel_api.SpanContext(trace_id, span_id, trace_flags,
+        sampling.trace_state)
       let child_ctx = parent_ctx.with_span_context(sc)
 
       let parent_span_id = if parent_sc.is_valid() then

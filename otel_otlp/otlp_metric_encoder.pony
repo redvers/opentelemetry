@@ -109,8 +109,8 @@ primitive OtlpMetricEncoder
     : json.JsonObject
   =>
     let obj = json.JsonObject
-    obj.data("startTimeUnixNano") = point.start_time_unix_nano.i64()
-    obj.data("timeUnixNano") = point.time_unix_nano.i64()
+    obj.data("startTimeUnixNano") = point.start_time_unix_nano.string()
+    obj.data("timeUnixNano") = point.time_unix_nano.string()
     obj.data("asDouble") = point.value
     if point.attributes.size() > 0 then
       obj.data("attributes") = OtlpJsonEncoder._encode_attributes(
@@ -122,16 +122,16 @@ primitive OtlpMetricEncoder
     : json.JsonObject
   =>
     let obj = json.JsonObject
-    obj.data("startTimeUnixNano") = point.start_time_unix_nano.i64()
-    obj.data("timeUnixNano") = point.time_unix_nano.i64()
-    obj.data("count") = point.count.i64()
+    obj.data("startTimeUnixNano") = point.start_time_unix_nano.string()
+    obj.data("timeUnixNano") = point.time_unix_nano.string()
+    obj.data("count") = point.count.string()
     obj.data("sum") = point.sum
     obj.data("min") = point.min_val
     obj.data("max") = point.max_val
 
     let bucket_arr = json.JsonArray
     for c in point.bucket_counts.values() do
-      bucket_arr.data.push(c.i64())
+      bucket_arr.data.push(c.string())
     end
     obj.data("bucketCounts") = bucket_arr
 

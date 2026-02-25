@@ -152,9 +152,9 @@ class iso _TestOtlpMetricEncoderHistogram is UnitTest
                       match try dp_arr.data(0)? end
                       | let dp_obj: json.JsonObject =>
                         match try dp_obj.data("count")? end
-                        | let c: I64 =>
-                          h.assert_eq[I64](4, c, "Count should be 4")
-                        else h.fail("count should be I64")
+                        | let c: String =>
+                          h.assert_eq[String]("4", c, "Count should be 4")
+                        else h.fail("count should be String")
                         end
 
                         match try dp_obj.data("sum")? end

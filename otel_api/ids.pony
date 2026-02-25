@@ -14,9 +14,9 @@ class val TraceId
   new val generate() =>
     _bytes = recover val
       let buf = Array[U8].init(0, 16)
-      // Retry until getrandom succeeds (returns requested byte count)
-      while @getrandom(buf.cpointer(), 16, 0) != 16 do
-        None
+      var retries: U32 = 0
+      while (@getrandom(buf.cpointer(), 16, 0) != 16) and (retries < 10) do
+        retries = retries + 1
       end
       buf
     end
@@ -83,9 +83,9 @@ class val SpanId
   new val generate() =>
     _bytes = recover val
       let buf = Array[U8].init(0, 8)
-      // Retry until getrandom succeeds (returns requested byte count)
-      while @getrandom(buf.cpointer(), 8, 0) != 8 do
-        None
+      var retries: U32 = 0
+      while (@getrandom(buf.cpointer(), 8, 0) != 8) and (retries < 10) do
+        retries = retries + 1
       end
       buf
     end

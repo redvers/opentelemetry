@@ -1,5 +1,4 @@
 use "collections"
-use "time"
 use otel_api = "../otel_api"
 
 
@@ -93,7 +92,7 @@ actor SdkMeterProvider is otel_api.MeterProvider
 
   new create() =>
     _instruments = Map[String, _InstrumentState]
-    _start_time_nanos = _wall_nanos()
+    _start_time_nanos = _WallClock.nanos()
 
   be get_meter(
     name: String,
@@ -177,7 +176,7 @@ actor SdkMeterProvider is otel_api.MeterProvider
     end
 
   be collect(callback: {(Array[MetricData val] val)} val) =>
-    let now = _wall_nanos()
+    let now = _WallClock.nanos()
     let results = recover iso Array[MetricData val] end
 
     for (name, state) in _instruments.pairs() do
@@ -326,6 +325,3 @@ actor SdkMeterProvider is otel_api.MeterProvider
     end
     consume result
 
-  fun tag _wall_nanos(): U64 =>
-    (let sec, let nsec) = Time.now()
-    ((sec.u64() * 1_000_000_000) + nsec.u64())

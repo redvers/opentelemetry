@@ -194,3 +194,52 @@ class iso _TestSdkSpanStatusPrecedence is UnitTest
     span.set_status(otel_api.SpanStatusOk)
     span.set_status(otel_api.SpanStatusError, "should be ignored")
     span.finish()
+
+
+actor _MockSpanProcessor is otel_sdk.SpanProcessor
+  let _h: TestHelper
+  let _expected_name: String
+
+  new create(h: TestHelper, expected_name: String) =>
+    _h = h
+    _expected_name = expected_name
+
+  be on_start(span: otel_sdk.ReadOnlySpan val) => None
+
+  be on_end(span: otel_sdk.ReadOnlySpan val) =>
+    _h.assert_eq[String](_expected_name, span.name)
+    _h.assert_true(span.span_context.is_valid(),
+      "Finished span should have valid context")
+    _h.assert_true(span.end_time >= span.start_time,
+      "end_time should be >= start_time")
+    _h.assert_eq[String]("test-scope", span.instrumentation_scope_name)
+    _h.assert_eq[String]("0.1.0", span.instrumentation_scope_version)
+    _h.complete(true)
+
+  be shutdown(callback: {(Bool)} val) =>
+    callback(true)
+
+  be force_flush(callback: {(Bool)} val) =>
+    callback(true)
+
+
+class iso _TestFullSpanPipeline is UnitTest
+  fun name(): String => "SdkSpan/full_pipeline"
+
+  fun apply(h: TestHelper) =>
+    h.long_test(2_000_000_000)
+
+    let processor = _MockSpanProcessor(h, "pipeline-span")
+    let processors: Array[otel_sdk.SpanProcessor tag] val =
+      recover val [as otel_sdk.SpanProcessor tag: processor] end
+    let config = otel_sdk.TracerProviderConfig
+    let provider = otel_sdk.SdkTracerProvider(config, processors)
+
+    let cb = {(tracer: otel_api.Tracer val)(h) =>
+      (let span, let ctx) = tracer.start_span("pipeline-span",
+        otel_api.Context, otel_api.SpanKindServer)
+      span.set_attribute("http.method", "GET")
+      span.finish()
+    } val
+
+    provider.get_tracer("test-scope", cb, "0.1.0")

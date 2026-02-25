@@ -1,5 +1,12 @@
 use otel_api = "../otel_api"
 
+primitive _MetricValueConvert
+  fun to_f64(value: otel_api.MetricValue): F64 =>
+    match value
+    | let i: I64 => i.f64()
+    | let f: F64 => f
+    end
+
 class val SdkCounter is otel_api.Counter
   let _provider: SdkMeterProvider tag
   let _name: String
@@ -22,17 +29,11 @@ class val SdkCounter is otel_api.Counter
       recover val Array[(String, otel_api.AttributeValue)] end)
   =>
     // Per OTel spec: Counter rejects negative values
-    let v = _to_f64(value)
+    let v = _MetricValueConvert.to_f64(value)
     if v < 0 then return end
     _provider._record_measurement(
       _name, otel_api.InstrumentKindCounter, v,
       attributes, _description, _unit)
-
-  fun tag _to_f64(value: otel_api.MetricValue): F64 =>
-    match value
-    | let i: I64 => i.f64()
-    | let f: F64 => f
-    end
 
 
 class val SdkUpDownCounter is otel_api.UpDownCounter
@@ -57,14 +58,9 @@ class val SdkUpDownCounter is otel_api.UpDownCounter
       recover val Array[(String, otel_api.AttributeValue)] end)
   =>
     _provider._record_measurement(
-      _name, otel_api.InstrumentKindUpDownCounter, _to_f64(value),
+      _name, otel_api.InstrumentKindUpDownCounter,
+      _MetricValueConvert.to_f64(value),
       attributes, _description, _unit)
-
-  fun tag _to_f64(value: otel_api.MetricValue): F64 =>
-    match value
-    | let i: I64 => i.f64()
-    | let f: F64 => f
-    end
 
 
 class val SdkHistogram is otel_api.Histogram
@@ -89,14 +85,9 @@ class val SdkHistogram is otel_api.Histogram
       recover val Array[(String, otel_api.AttributeValue)] end)
   =>
     _provider._record_measurement(
-      _name, otel_api.InstrumentKindHistogram, _to_f64(value),
+      _name, otel_api.InstrumentKindHistogram,
+      _MetricValueConvert.to_f64(value),
       attributes, _description, _unit)
-
-  fun tag _to_f64(value: otel_api.MetricValue): F64 =>
-    match value
-    | let i: I64 => i.f64()
-    | let f: F64 => f
-    end
 
 
 class val SdkGauge is otel_api.Gauge
@@ -121,11 +112,6 @@ class val SdkGauge is otel_api.Gauge
       recover val Array[(String, otel_api.AttributeValue)] end)
   =>
     _provider._record_measurement(
-      _name, otel_api.InstrumentKindGauge, _to_f64(value),
+      _name, otel_api.InstrumentKindGauge,
+      _MetricValueConvert.to_f64(value),
       attributes, _description, _unit)
-
-  fun tag _to_f64(value: otel_api.MetricValue): F64 =>
-    match value
-    | let i: I64 => i.f64()
-    | let f: F64 => f
-    end

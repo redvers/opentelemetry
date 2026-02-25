@@ -48,3 +48,5 @@ actor Main is TestList
     test(_TestResourceGrouping)
     test(_TestAttributeOrderIndependence)
     test(_TestAttributeSerializationArrays)
+    test(_TestTraceIdRatioSamplerMidrange)
+    test(_TestFullSpanPipeline)

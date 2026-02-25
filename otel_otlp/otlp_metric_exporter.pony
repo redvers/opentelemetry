@@ -42,7 +42,7 @@ actor OtlpMetricExporter is otel_sdk.MetricExporter
 
     try
       let url = http.URL.build(consume url_str)?
-      let handler_factory = _OtlpMetricHandlerFactory(callback)
+      let handler_factory = _OtlpHandlerFactory(callback)
       var client = http.HTTPClient(_auth, handler_factory)
       let request = http.Payload.request("POST", url)
       request("Content-Type") = "application/json"
@@ -58,34 +58,3 @@ actor OtlpMetricExporter is otel_sdk.MetricExporter
   be shutdown(callback: {(Bool)} val) =>
     _is_shutdown = true
     callback(true)
-
-
-class val _OtlpMetricHandlerFactory is http.HandlerFactory
-  let _callback: {(otel_sdk.ExportResult)} val
-
-  new val create(callback: {(otel_sdk.ExportResult)} val) =>
-    _callback = callback
-
-  fun apply(session: http.HTTPSession): http.HTTPHandler ref^ =>
-    _OtlpMetricResponseHandler(_callback)
-
-
-class ref _OtlpMetricResponseHandler is http.HTTPHandler
-  let _callback: {(otel_sdk.ExportResult)} val
-  var _status: U16 = 0
-
-  new ref create(callback: {(otel_sdk.ExportResult)} val) =>
-    _callback = callback
-
-  fun ref apply(payload: http.Payload val): Any =>
-    _status = payload.status
-
-  fun ref finished() =>
-    if (_status >= 200) and (_status < 300) then
-      _callback(otel_sdk.ExportSuccess)
-    else
-      _callback(otel_sdk.ExportFailure)
-    end
-
-  fun ref failed(reason: http.HTTPFailureReason) =>
-    _callback(otel_sdk.ExportFailure)

@@ -176,8 +176,8 @@ primitive OtlpJsonEncoder
 
     obj.data("name") = span.name
     obj.data("kind") = _span_kind_value(span.kind).i64()
-    obj.data("startTimeUnixNano") = span.start_time.i64()
-    obj.data("endTimeUnixNano") = span.end_time.i64()
+    obj.data("startTimeUnixNano") = span.start_time.string()
+    obj.data("endTimeUnixNano") = span.end_time.string()
 
     if span.attributes.size() > 0 then
       obj.data("attributes") = _encode_attributes(span.attributes)
@@ -203,7 +203,7 @@ primitive OtlpJsonEncoder
   fun _encode_event(event: otel_api.SpanEvent): json.JsonObject =>
     let obj = json.JsonObject
     obj.data("name") = event.name
-    obj.data("timeUnixNano") = event.timestamp.i64()
+    obj.data("timeUnixNano") = event.timestamp.string()
     if event.attributes.size() > 0 then
       obj.data("attributes") = _encode_attributes(event.attributes)
     end

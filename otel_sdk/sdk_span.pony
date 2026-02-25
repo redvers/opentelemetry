@@ -1,4 +1,3 @@
-use "time"
 use otel_api = "../otel_api"
 
 class ref SdkSpan is otel_api.Span
@@ -38,7 +37,7 @@ class ref SdkSpan is otel_api.Span
     _span_context = span_context'
     _parent_span_id = parent_span_id'
     _kind = kind'
-    _start_time = _wall_nanos()
+    _start_time = _WallClock.nanos()
     _status = otel_api.SpanStatus
     _attributes = Array[(String, otel_api.AttributeValue)]
     _events = Array[otel_api.SpanEvent]
@@ -78,7 +77,7 @@ class ref SdkSpan is otel_api.Span
   =>
     if _finished then return end
     if _events.size() < _limits.max_events then
-      _events.push(otel_api.SpanEvent(name, _wall_nanos(), attributes))
+      _events.push(otel_api.SpanEvent(name, _WallClock.nanos(), attributes))
     end
 
   fun ref set_status(code: otel_api.SpanStatusCode, description: String = "") =>
@@ -98,7 +97,7 @@ class ref SdkSpan is otel_api.Span
     if _finished then return end
     _finished = true
 
-    let end_time = _wall_nanos()
+    let end_time = _WallClock.nanos()
 
     // Copy ref data to iso arrays, then consume to val.
     // Can't access ref fields inside recover, so we build iso outside.
@@ -135,10 +134,3 @@ class ref SdkSpan is otel_api.Span
   fun val span_context(): otel_api.SpanContext => _span_context
 
   fun ref is_recording(): Bool => not _finished
-
-  fun tag _wall_nanos(): U64 =>
-    """
-    Wall-clock time as nanoseconds since Unix epoch.
-    """
-    (let sec, let nsec) = Time.now()
-    ((sec.u64() * 1_000_000_000) + nsec.u64())
