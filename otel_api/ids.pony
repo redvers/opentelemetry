@@ -18,11 +18,8 @@ class val TraceId
       (let s, let ns) = Time.now()
       let rand = Rand(s.u64(), ns.u64())
       let buf = Array[U8](16)
-      var i: USize = 0
-      while i < 16 do
-        buf.push(rand.u8())
-        i = i + 1
-      end
+      buf.push_u64(rand.u64())
+      buf.push_u64(rand.u64())
       buf
     end
 
@@ -86,11 +83,7 @@ class val SpanId
       (let s, let ns) = Time.now()
       let rand = Rand(s.u64(), ns.u64())
       let buf = Array[U8](8)
-      var i: USize = 0
-      while i < 8 do
-        buf.push(rand.u8())
-        i = i + 1
-      end
+      buf.push_u64(rand.u64())
       buf
     end
 

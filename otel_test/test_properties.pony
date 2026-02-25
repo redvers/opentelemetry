@@ -12,26 +12,14 @@ primitive _PropBytes
   fun u128_to_trace_id_bytes(n: U128): Array[U8] val =>
     recover val
       let b = Array[U8](16)
-      var v = n
-      var i: U8 = 0
-      while i < 16 do
-        b.push((v and 0xFF).u8())
-        v = v >> 8
-        i = i + 1
-      end
+      b.push_u128(n)
       b
     end
 
   fun u64_to_span_id_bytes(n: U64): Array[U8] val =>
     recover val
       let b = Array[U8](8)
-      var v = n
-      var i: U8 = 0
-      while i < 8 do
-        b.push((v and 0xFF).u8())
-        v = v >> 8
-        i = i + 1
-      end
+      b.push_u64(n)
       b
     end
 

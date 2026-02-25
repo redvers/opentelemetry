@@ -107,16 +107,4 @@ class val TraceIdRatioSampler is Sampler
     """
     Extract lower 8 bytes of trace ID as a U64 for ratio comparison.
     """
-    let bytes = trace_id.bytes()
-    try
-      (bytes(8)?.u64() << 56) or
-      (bytes(9)?.u64() << 48) or
-      (bytes(10)?.u64() << 40) or
-      (bytes(11)?.u64() << 32) or
-      (bytes(12)?.u64() << 24) or
-      (bytes(13)?.u64() << 16) or
-      (bytes(14)?.u64() << 8) or
-       bytes(15)?.u64()
-    else
-      0
-    end
+    try trace_id.bytes().read_u64(8)? else 0 end
