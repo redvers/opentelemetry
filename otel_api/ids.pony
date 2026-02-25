@@ -1,5 +1,6 @@
 use "format"
-use @getrandom[ISize](buf: Pointer[U8] tag, buflen: USize, flags: U32)
+use "random"
+use "time"
 
 class val TraceId
   """
@@ -14,10 +15,13 @@ class val TraceId
 
   new val generate() =>
     _bytes = recover val
-      let buf = Array[U8].init(0, 16)
-      var retries: U32 = 0
-      while (@getrandom(buf.cpointer(), 16, 0) != 16) and (retries < 10) do
-        retries = retries + 1
+      (let s, let ns) = Time.now()
+      let rand = Rand(s.u64(), ns.u64())
+      let buf = Array[U8](16)
+      var i: USize = 0
+      while i < 16 do
+        buf.push(rand.u8())
+        i = i + 1
       end
       buf
     end
@@ -79,10 +83,13 @@ class val SpanId
 
   new val generate() =>
     _bytes = recover val
-      let buf = Array[U8].init(0, 8)
-      var retries: U32 = 0
-      while (@getrandom(buf.cpointer(), 8, 0) != 8) and (retries < 10) do
-        retries = retries + 1
+      (let s, let ns) = Time.now()
+      let rand = Rand(s.u64(), ns.u64())
+      let buf = Array[U8](8)
+      var i: USize = 0
+      while i < 8 do
+        buf.push(rand.u8())
+        i = i + 1
       end
       buf
     end

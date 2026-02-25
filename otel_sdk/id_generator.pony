@@ -1,7 +1,5 @@
 use otel_api = "../otel_api"
 
-use @getrandom[ISize](buf: Pointer[U8] tag, buflen: USize, flags: U32)
-
 trait val IdGenerator
   fun val generate_trace_id(): otel_api.TraceId
   fun val generate_span_id(): otel_api.SpanId
@@ -9,7 +7,7 @@ trait val IdGenerator
 
 class val RandomIdGenerator is IdGenerator
   """
-  Generates random IDs using OS cryptographic random via getrandom(2).
+  Generates random IDs using the stdlib Rand PRNG seeded by wall-clock time.
   Stateless (val) — safe to share across actors.
   """
   fun val generate_trace_id(): otel_api.TraceId =>
