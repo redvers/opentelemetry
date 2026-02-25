@@ -1,4 +1,8 @@
 actor NoopMeterProvider is MeterProvider
+  """
+  A no-op `MeterProvider` that always returns `NoopMeter`. Used as the default
+  when no SDK is configured.
+  """
   be get_meter(
     name: String,
     callback: {(Meter val)} val,
@@ -12,6 +16,10 @@ actor NoopMeterProvider is MeterProvider
 
 
 class val NoopMeter is Meter
+  """
+  A no-op `Meter` that returns no-op instrument instances. Discards all
+  measurements.
+  """
   fun val counter(name: String, description: String = "",
     unit: String = ""): Counter val
   =>
@@ -34,6 +42,9 @@ class val NoopMeter is Meter
 
 
 class val NoopCounter is Counter
+  """
+  A no-op `Counter` that silently discards all values.
+  """
   fun val add(value: MetricValue,
     attributes: Attributes =
       recover val Array[(String, AttributeValue)] end)
@@ -41,6 +52,9 @@ class val NoopCounter is Counter
     None
 
 class val NoopUpDownCounter is UpDownCounter
+  """
+  A no-op `UpDownCounter` that silently discards all values.
+  """
   fun val add(value: MetricValue,
     attributes: Attributes =
       recover val Array[(String, AttributeValue)] end)
@@ -48,6 +62,9 @@ class val NoopUpDownCounter is UpDownCounter
     None
 
 class val NoopHistogram is Histogram
+  """
+  A no-op `Histogram` that silently discards all values.
+  """
   fun val record(value: MetricValue,
     attributes: Attributes =
       recover val Array[(String, AttributeValue)] end)
@@ -55,6 +72,9 @@ class val NoopHistogram is Histogram
     None
 
 class val NoopGauge is Gauge
+  """
+  A no-op `Gauge` that silently discards all values.
+  """
   fun val record(value: MetricValue,
     attributes: Attributes =
       recover val Array[(String, AttributeValue)] end)

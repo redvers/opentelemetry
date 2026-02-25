@@ -20,6 +20,10 @@ actor SdkTracerProvider is otel_api.TracerProvider
     end
 
   be add_processor(processor: SpanProcessor tag) =>
+    """
+    Registers a `SpanProcessor` to receive span lifecycle events. Ignored
+    after shutdown.
+    """
     if not _is_shutdown then
       _processors.push(processor)
     end
@@ -30,6 +34,11 @@ actor SdkTracerProvider is otel_api.TracerProvider
     version: String = "",
     schema_url: String = "")
   =>
+    """
+    Creates a new `SdkTracer` for the named instrumentation scope and passes
+    it to the callback. Returns a `NoopTracer` if the provider has been shut
+    down.
+    """
     if _is_shutdown then
       callback(otel_api.NoopTracer)
       return
@@ -59,6 +68,10 @@ actor SdkTracerProvider is otel_api.TracerProvider
     end
 
   be shutdown(callback: {(Bool)} val) =>
+    """
+    Shuts down all registered processors. The callback receives `true` if
+    every processor shut down successfully.
+    """
     if _is_shutdown then
       callback(true)
       return
@@ -90,6 +103,10 @@ actor SdkTracerProvider is otel_api.TracerProvider
     end
 
   be force_flush(callback: {(Bool)} val) =>
+    """
+    Forces all registered processors to flush pending spans immediately.
+    Returns `false` via the callback if the provider has been shut down.
+    """
     if _is_shutdown then
       callback(false)
       return

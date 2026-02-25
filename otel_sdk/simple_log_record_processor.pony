@@ -1,4 +1,8 @@
 actor SimpleLogRecordProcessor is LogRecordProcessor
+  """
+  Exports each log record immediately when it is emitted. Suitable for
+  development and testing; not recommended for production.
+  """
   let _exporter: LogRecordExporter
   var _is_shutdown: Bool = false
 

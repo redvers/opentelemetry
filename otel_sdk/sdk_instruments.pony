@@ -1,6 +1,9 @@
 use otel_api = "../otel_api"
 
 primitive _MetricValueConvert
+  """
+  Converts a `MetricValue` union to `F64` for internal accumulation.
+  """
   fun to_f64(value: otel_api.MetricValue): F64 =>
     match value
     | let i: I64 => i.f64()
@@ -8,6 +11,10 @@ primitive _MetricValueConvert
     end
 
 class val SdkCounter is otel_api.Counter
+  """
+  SDK implementation of `Counter`. Rejects negative values per the OpenTelemetry
+  spec and routes measurements to `SdkMeterProvider` for accumulation.
+  """
   let _provider: SdkMeterProvider tag
   let _name: String
   let _description: String
@@ -43,6 +50,10 @@ class val SdkCounter is otel_api.Counter
 
 
 class val SdkUpDownCounter is otel_api.UpDownCounter
+  """
+  SDK implementation of `UpDownCounter`. Accepts positive and negative values
+  and routes measurements to `SdkMeterProvider` for accumulation.
+  """
   let _provider: SdkMeterProvider tag
   let _name: String
   let _description: String
@@ -76,6 +87,10 @@ class val SdkUpDownCounter is otel_api.UpDownCounter
 
 
 class val SdkHistogram is otel_api.Histogram
+  """
+  SDK implementation of `Histogram`. Routes recorded values to
+  `SdkMeterProvider` for bucket aggregation.
+  """
   let _provider: SdkMeterProvider tag
   let _name: String
   let _description: String
@@ -109,6 +124,10 @@ class val SdkHistogram is otel_api.Histogram
 
 
 class val SdkGauge is otel_api.Gauge
+  """
+  SDK implementation of `Gauge`. Routes the latest recorded value to
+  `SdkMeterProvider`.
+  """
   let _provider: SdkMeterProvider tag
   let _name: String
   let _description: String

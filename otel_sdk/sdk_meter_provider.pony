@@ -93,6 +93,12 @@ class ref _InstrumentState
 
 
 actor SdkMeterProvider is otel_api.MeterProvider
+  """
+  Concrete `MeterProvider` that accumulates measurements from SDK instruments.
+  Internally groups measurements by instrument name and attribute set using
+  sum, histogram, and gauge accumulators. Call `collect()` to produce a snapshot
+  of `MetricData` for export.
+  """
   let _instruments: Map[String, _InstrumentState]
   var _start_time_nanos: U64
   var _is_shutdown: Bool = false
@@ -186,6 +192,11 @@ actor SdkMeterProvider is otel_api.MeterProvider
     end
 
   be collect(callback: {(Array[MetricData val] val)} val) =>
+    """
+    Collects all accumulated metric data and passes an immutable snapshot to
+    the callback. Data points include cumulative values from the provider's
+    start time through the current wall-clock time.
+    """
     let now = _WallClock.nanos()
     let results = recover iso Array[MetricData val] end
 

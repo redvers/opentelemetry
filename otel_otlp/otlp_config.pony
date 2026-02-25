@@ -1,6 +1,9 @@
 class val OtlpConfig
   """
-  Configuration for the OTLP HTTP/JSON exporter.
+  Configuration for the OTLP HTTP/JSON exporters. Defaults to
+  `http://localhost:4318` with standard signal paths (`/v1/traces`,
+  `/v1/metrics`, `/v1/logs`) and a 10-second timeout. Custom headers can be
+  supplied for authentication.
   """
   let endpoint: String
   let traces_path: String

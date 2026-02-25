@@ -13,7 +13,11 @@ class val Resource
     _attributes = attributes'
     schema_url = schema_url'
 
-  fun val attributes(): Array[(String, AttributeValue)] val => _attributes
+  fun val attributes(): Array[(String, AttributeValue)] val =>
+    """
+    Returns the attribute key-value pairs for this resource.
+    """
+    _attributes
 
   fun val merge(other: Resource): Resource =>
     """

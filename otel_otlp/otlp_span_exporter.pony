@@ -4,7 +4,9 @@ use otel_sdk = "../otel_sdk"
 
 actor OtlpSpanExporter is otel_sdk.SpanExporter
   """
-  Exports spans to an OTLP HTTP/JSON endpoint.
+  Exports spans to an OTLP HTTP/JSON endpoint. Encodes batches of
+  `ReadOnlySpan` vals using `OtlpJsonEncoder` and POSTs the resulting JSON to
+  the configured traces path.
   """
   let _config: OtlpConfig
   let _auth: TCPConnectAuth

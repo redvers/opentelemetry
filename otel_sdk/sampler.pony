@@ -2,14 +2,25 @@ use "format"
 use otel_api = "../otel_api"
 
 primitive SamplingDecisionDrop
+  """
+  The span is not recorded and not sampled. A `NoopSpan` is returned.
+  """
   fun string(): String iso^ => "Drop".clone()
 
 primitive SamplingDecisionRecordOnly
+  """
+  The span is recorded but the sampled flag is not set, so downstream
+  collectors may discard it.
+  """
   fun string(): String iso^ => "RecordOnly".clone()
 
 primitive SamplingDecisionRecordAndSample
+  """
+  The span is recorded and the sampled flag is set, so it will be exported.
+  """
   fun string(): String iso^ => "RecordAndSample".clone()
 
+// Union of all sampling decision primitives.
 type SamplingDecision is
   ( SamplingDecisionDrop
   | SamplingDecisionRecordOnly
@@ -17,6 +28,10 @@ type SamplingDecision is
 
 
 class val SamplingResult
+  """
+  The outcome of a sampling decision: a `SamplingDecision` and an optional
+  `trace_state` string to propagate.
+  """
   let decision: SamplingDecision
   let trace_state: String
 
@@ -39,11 +54,20 @@ trait val Sampler
     name: String,
     kind: otel_api.SpanKind)
     : SamplingResult
+    """
+    Returns a `SamplingResult` for the prospective span.
+    """
 
   fun val description(): String
+    """
+    Returns a human-readable description of this sampler's configuration.
+    """
 
 
 class val AlwaysOnSampler is Sampler
+  """
+  A sampler that records and samples every span unconditionally.
+  """
   fun val should_sample(
     parent_context: otel_api.Context,
     trace_id: otel_api.TraceId,
@@ -57,6 +81,9 @@ class val AlwaysOnSampler is Sampler
 
 
 class val AlwaysOffSampler is Sampler
+  """
+  A sampler that drops every span unconditionally.
+  """
   fun val should_sample(
     parent_context: otel_api.Context,
     trace_id: otel_api.TraceId,

@@ -1,6 +1,12 @@
 use otel_api = "../otel_api"
 
 class val SdkLogger is otel_api.Logger
+  """
+  SDK implementation of `Logger`. Builds a `LogRecordData` from each `emit()`
+  call, fills in wall-clock timestamps when not provided, extracts trace
+  correlation from the supplied `Context`, and routes the record through the
+  owning `SdkLoggerProvider`.
+  """
   let _provider: SdkLoggerProvider tag
   let _name: String
   let _version: String

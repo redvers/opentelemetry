@@ -6,10 +6,16 @@ use otel_sdk = "../otel_sdk"
 
 primitive OtlpJsonEncoder
   """
-  Stateless encoder: converts ReadOnlySpan vals into OTLP JSON format.
-  Produces the ExportTraceServiceRequest JSON structure.
+  Stateless encoder: converts `ReadOnlySpan` vals into the OTLP JSON
+  `ExportTraceServiceRequest` structure. Spans are grouped by resource and
+  instrumentation scope to match the OTLP wire format. Also provides shared
+  `_encode_attributes` used by `OtlpMetricEncoder` and `OtlpLogEncoder`.
   """
   fun encode_spans(spans: Array[otel_sdk.ReadOnlySpan val] val): String =>
+    """
+    Encodes a batch of spans into an OTLP JSON string. Groups spans by
+    resource and scope into the `resourceSpans > scopeSpans > spans` hierarchy.
+    """
     // Group spans by (resource, scope) for OTLP structure
     let root = json.JsonObject
 

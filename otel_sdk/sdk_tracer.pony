@@ -38,6 +38,11 @@ class val SdkTracer is otel_api.Tracer
       recover val Array[(String, otel_api.AttributeValue)] end)
     : (otel_api.Span ref, otel_api.Context val)
   =>
+    """
+    Creates a new `SdkSpan`. Consults the sampler to decide whether to record
+    and/or sample. Reuses the parent's trace ID when a valid parent context is
+    provided; otherwise generates a new one. Notifies processors of span start.
+    """
     let parent_sc = parent_ctx.span_context()
 
     // Determine trace ID: reuse parent's if valid, otherwise generate new

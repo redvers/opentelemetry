@@ -1,6 +1,9 @@
 class val SpanLimits
   """
-  Configurable limits on span data to prevent unbounded memory growth.
+  Configurable limits on span data to prevent unbounded memory growth. Defaults
+  to 128 attributes, 128 events, and no value length limit. Set
+  `max_attribute_value_length` to a positive value to truncate string attribute
+  values.
   """
   let max_attributes: USize
   let max_events: USize

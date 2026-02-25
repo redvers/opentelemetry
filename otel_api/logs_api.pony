@@ -1,6 +1,12 @@
+// The body of a log record: either a String message or None.
 type LogBody is (String | None)
 
 primitive SeverityNumber
+  """
+  OpenTelemetry log severity numbers (1-24). Maps standard log levels to
+  numeric values. Uses `err()` through `err4()` for the error range because
+  `error` is a Pony keyword.
+  """
   fun unspecified(): U8 => 0
   fun trace():  U8 => 1
   fun trace2(): U8 => 2
@@ -29,12 +35,25 @@ primitive SeverityNumber
 
 
 trait tag LoggerProvider
+  """
+  Entry point for creating `Logger` instances. Implemented as an actor to allow
+  shared access across actors.
+  """
   be get_logger(name: String, callback: {(Logger val)} val,
     version: String = "", schema_url: String = "")
+    """
+    Asynchronously provides a `Logger` for the named instrumentation scope.
+    """
   be shutdown(callback: {(Bool)} val)
+    """
+    Shuts down the provider, flushing any pending log records.
+    """
 
 
 trait val Logger
+  """
+  Emits log records. Stateless (val) so it can be shared across actors.
+  """
   fun val emit(
     body: LogBody = None,
     severity_number: U8 = 0,
@@ -44,3 +63,8 @@ trait val Logger
     timestamp: U64 = 0,
     observed_timestamp: U64 = 0,
     context: Context = Context)
+    """
+    Emits a log record. Pass a `Context` containing an active span to
+    correlate the log with a trace. If timestamps are zero, the SDK fills
+    them with the current wall-clock time.
+    """

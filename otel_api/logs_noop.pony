@@ -1,4 +1,8 @@
 actor NoopLoggerProvider is LoggerProvider
+  """
+  A no-op `LoggerProvider` that always returns `NoopLogger`. Used as the
+  default when no SDK is configured.
+  """
   be get_logger(name: String, callback: {(Logger val)} val,
     version: String = "", schema_url: String = "")
   =>
@@ -9,6 +13,9 @@ actor NoopLoggerProvider is LoggerProvider
 
 
 class val NoopLogger is Logger
+  """
+  A no-op `Logger` that silently discards all emitted log records.
+  """
   fun val emit(
     body: LogBody = None,
     severity_number: U8 = 0,

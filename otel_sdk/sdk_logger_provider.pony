@@ -1,6 +1,10 @@
 use otel_api = "../otel_api"
 
 class val LoggerProviderConfig
+  """
+  Configuration for `SdkLoggerProvider`. Holds the `Resource` that describes
+  the entity producing logs.
+  """
   let resource: otel_api.Resource
 
   new val create(
@@ -10,6 +14,11 @@ class val LoggerProviderConfig
 
 
 actor SdkLoggerProvider is otel_api.LoggerProvider
+  """
+  Concrete `LoggerProvider` that manages log record processors and coordinates
+  shutdown. Creates `SdkLogger` instances that route emitted logs through all
+  registered processors.
+  """
   let _config: LoggerProviderConfig
   let _processors: Array[LogRecordProcessor tag]
   var _is_shutdown: Bool = false
@@ -26,6 +35,10 @@ actor SdkLoggerProvider is otel_api.LoggerProvider
     end
 
   be add_processor(processor: LogRecordProcessor tag) =>
+    """
+    Registers a `LogRecordProcessor` to receive emitted log records. Ignored
+    after shutdown.
+    """
     if not _is_shutdown then
       _processors.push(processor)
     end

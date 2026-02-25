@@ -4,6 +4,11 @@ use otel_api = "../otel_api"
 use otel_sdk = "../otel_sdk"
 
 primitive OtlpLogEncoder
+  """
+  Stateless encoder: converts `LogRecordData` vals into the OTLP JSON
+  `ExportLogsServiceRequest` structure. Logs are grouped by instrumentation
+  scope under a single resource.
+  """
   fun encode_logs(
     logs: Array[otel_sdk.LogRecordData val] val,
     resource: otel_api.Resource = otel_api.Resource)

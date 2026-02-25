@@ -2,7 +2,10 @@ use otel_api = "../otel_api"
 
 class val TracerProviderConfig
   """
-  Configuration for SdkTracerProvider.
+  Configuration for `SdkTracerProvider`. Groups the `Resource`, `Sampler`,
+  `IdGenerator`, and `SpanLimits` used when creating tracers and spans.
+  All fields default to sensible values: an empty resource, `AlwaysOnSampler`,
+  `RandomIdGenerator`, and default `SpanLimits`.
   """
   let resource: otel_api.Resource
   let sampler: Sampler

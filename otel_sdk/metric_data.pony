@@ -1,8 +1,15 @@
 use otel_api = "../otel_api"
 
 primitive CumulativeTemporality
+  """
+  Indicates metrics are reported as cumulative sums from a fixed start time.
+  """
 
 class val NumberDataPoint
+  """
+  An immutable data point for sum and gauge metrics: a single numeric value
+  with attributes and a time window.
+  """
   let attributes: otel_api.Attributes
   let start_time_unix_nano: U64
   let time_unix_nano: U64
@@ -22,6 +29,10 @@ class val NumberDataPoint
 
 
 class val HistogramDataPoint
+  """
+  An immutable data point for histogram metrics: bucket counts, sum, count,
+  min, max, and explicit bounds with attributes and a time window.
+  """
   let attributes: otel_api.Attributes
   let start_time_unix_nano: U64
   let time_unix_nano: U64
@@ -55,12 +66,19 @@ class val HistogramDataPoint
     max_val = max_val'
 
 
+// The data payload of a metric: either number data points (for sum/gauge) or
+// histogram data points.
 type MetricDataKind is
   ( Array[NumberDataPoint val] val
   | Array[HistogramDataPoint val] val )
 
 
 class val MetricData
+  """
+  An immutable metric snapshot containing the instrument name, description,
+  unit, kind, and collected data points. Produced by `SdkMeterProvider.collect()`
+  and consumed by `MetricExporter`.
+  """
   let name: String
   let description: String
   let unit: String

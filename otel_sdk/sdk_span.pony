@@ -118,6 +118,11 @@ class ref SdkSpan is otel_api.Span
     _name = name
 
   fun ref finish() =>
+    """
+    Records the end timestamp, freezes all collected data into a `ReadOnlySpan`
+    val, and invokes the on-finish callback to notify the provider. Subsequent
+    calls are ignored.
+    """
     if _finished then return end
     _finished = true
 

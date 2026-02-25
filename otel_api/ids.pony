@@ -9,11 +9,19 @@ class val TraceId
   let _bytes: Array[U8] val
 
   new val create(bytes': Array[U8] val) =>
+    """
+    Creates a `TraceId` from a 16-byte array. If the array is not exactly 16
+    bytes, an all-zero (invalid) ID is used instead.
+    """
     _bytes = if bytes'.size() == 16 then bytes' else
       recover val Array[U8].init(0, 16) end
     end
 
   new val generate() =>
+    """
+    Generates a random `TraceId` using the stdlib `Rand` PRNG seeded from
+    wall-clock time.
+    """
     _bytes = recover val
       (let s, let ns) = Time.now()
       let rand = Rand(s.u64(), ns.u64())
@@ -24,11 +32,21 @@ class val TraceId
     end
 
   new val invalid() =>
+    """
+    Creates an all-zero `TraceId` representing the absence of a trace.
+    """
     _bytes = recover val Array[U8].init(0, 16) end
 
-  fun val bytes(): Array[U8] val => _bytes
+  fun val bytes(): Array[U8] val =>
+    """
+    Returns the raw 16-byte representation.
+    """
+    _bytes
 
   fun val is_valid(): Bool =>
+    """
+    Returns `true` if any byte is non-zero.
+    """
     try
       var i: USize = 0
       while i < 16 do
@@ -39,6 +57,9 @@ class val TraceId
     false
 
   fun val hex(): String =>
+    """
+    Returns the 32-character lowercase hex encoding.
+    """
     let s = recover iso String(32) end
     try
       var i: USize = 0
@@ -51,6 +72,9 @@ class val TraceId
     consume s
 
   fun val eq(other: TraceId): Bool =>
+    """
+    Byte-wise equality comparison.
+    """
     try
       var i: USize = 0
       while i < 16 do
@@ -74,11 +98,19 @@ class val SpanId
   let _bytes: Array[U8] val
 
   new val create(bytes': Array[U8] val) =>
+    """
+    Creates a `SpanId` from an 8-byte array. If the array is not exactly 8
+    bytes, an all-zero (invalid) ID is used instead.
+    """
     _bytes = if bytes'.size() == 8 then bytes' else
       recover val Array[U8].init(0, 8) end
     end
 
   new val generate() =>
+    """
+    Generates a random `SpanId` using the stdlib `Rand` PRNG seeded from
+    wall-clock time.
+    """
     _bytes = recover val
       (let s, let ns) = Time.now()
       let rand = Rand(s.u64(), ns.u64())
@@ -88,11 +120,21 @@ class val SpanId
     end
 
   new val invalid() =>
+    """
+    Creates an all-zero `SpanId` representing the absence of a span.
+    """
     _bytes = recover val Array[U8].init(0, 8) end
 
-  fun val bytes(): Array[U8] val => _bytes
+  fun val bytes(): Array[U8] val =>
+    """
+    Returns the raw 8-byte representation.
+    """
+    _bytes
 
   fun val is_valid(): Bool =>
+    """
+    Returns `true` if any byte is non-zero.
+    """
     try
       var i: USize = 0
       while i < 8 do
@@ -103,6 +145,9 @@ class val SpanId
     false
 
   fun val hex(): String =>
+    """
+    Returns the 16-character lowercase hex encoding.
+    """
     let s = recover iso String(16) end
     try
       var i: USize = 0
@@ -115,6 +160,9 @@ class val SpanId
     consume s
 
   fun val eq(other: SpanId): Bool =>
+    """
+    Byte-wise equality comparison.
+    """
     try
       var i: USize = 0
       while i < 8 do
@@ -148,6 +196,11 @@ class val SpanContext
     trace_state': String = "",
     is_remote': Bool = false)
   =>
+    """
+    Creates a `SpanContext` with the given identifiers. The `trace_flags`
+    defaults to sampled (0x01). Set `is_remote` to `true` for contexts
+    extracted from incoming requests.
+    """
     trace_id = trace_id'
     span_id = span_id'
     trace_flags = trace_flags'
@@ -155,6 +208,9 @@ class val SpanContext
     is_remote = is_remote'
 
   new val invalid() =>
+    """
+    Creates an invalid `SpanContext` with zeroed IDs and no flags.
+    """
     trace_id = TraceId.invalid()
     span_id = SpanId.invalid()
     trace_flags = 0
@@ -162,11 +218,20 @@ class val SpanContext
     is_remote = false
 
   fun val is_valid(): Bool =>
+    """
+    Returns `true` when both the trace ID and span ID are non-zero.
+    """
     trace_id.is_valid() and span_id.is_valid()
 
   fun val is_sampled(): Bool =>
+    """
+    Returns `true` when the sampled bit (0x01) is set in `trace_flags`.
+    """
     (trace_flags and 0x01) == 0x01
 
 
 primitive TraceFlags
+  """
+  Constants for the W3C trace flags byte.
+  """
   fun sampled(): U8 => 0x01

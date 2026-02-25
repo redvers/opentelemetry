@@ -1,6 +1,11 @@
 use "time"
 
 actor BatchLogRecordProcessor is LogRecordProcessor
+  """
+  Batches log records and exports them periodically or when the batch reaches
+  a size threshold. Uses Pony's `Timers` for scheduling. Defaults to a batch
+  size of 512 and a 5-second delay.
+  """
   let _exporter: LogRecordExporter
   let _max_batch_size: USize
   let _schedule_delay_nanos: U64

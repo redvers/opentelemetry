@@ -4,6 +4,11 @@ use otel_api = "../otel_api"
 use otel_sdk = "../otel_sdk"
 
 actor OtlpMetricExporter is otel_sdk.MetricExporter
+  """
+  Exports metrics to an OTLP HTTP/JSON endpoint. Encodes `MetricData` using
+  `OtlpMetricEncoder` and POSTs the resulting JSON to the configured metrics
+  path.
+  """
   let _config: OtlpConfig
   let _resource: otel_api.Resource
   let _auth: TCPConnectAuth

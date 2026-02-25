@@ -4,6 +4,11 @@ use otel_api = "../otel_api"
 use otel_sdk = "../otel_sdk"
 
 primitive OtlpMetricEncoder
+  """
+  Stateless encoder: converts `MetricData` vals into the OTLP JSON
+  `ExportMetricsServiceRequest` structure. Metrics are grouped by
+  instrumentation scope under a single resource.
+  """
   fun encode_metrics(
     metrics: Array[otel_sdk.MetricData val] val,
     resource: otel_api.Resource = otel_api.Resource)

@@ -1,6 +1,11 @@
 use otel_api = "../otel_api"
 
 class val SdkMeter is otel_api.Meter
+  """
+  SDK implementation of `Meter`. Creates SDK instrument instances that record
+  measurements through the owning `SdkMeterProvider`. Stateless (val) — holds
+  a tag reference to the provider actor and the instrumentation scope identity.
+  """
   let _provider: SdkMeterProvider tag
   let _name: String
   let _version: String

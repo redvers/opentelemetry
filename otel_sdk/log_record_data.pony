@@ -1,6 +1,11 @@
 use otel_api = "../otel_api"
 
 class val LogRecordData
+  """
+  Immutable snapshot of a log record, safe to send across actors. Contains the
+  log body, severity, attributes, timestamps, trace correlation IDs, and the
+  resource and scope that produced it.
+  """
   let timestamp: U64
   let observed_timestamp: U64
   let severity_number: U8

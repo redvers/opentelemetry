@@ -1,4 +1,8 @@
 actor NoopTracerProvider is TracerProvider
+  """
+  A no-op `TracerProvider` that always returns `NoopTracer`. Used as the
+  default when no SDK is configured.
+  """
   be get_tracer(
     name: String,
     callback: {(Tracer val)} val,
@@ -12,6 +16,9 @@ actor NoopTracerProvider is TracerProvider
 
 
 class val NoopTracer is Tracer
+  """
+  A no-op `Tracer` that returns `NoopSpan` instances. Discards all telemetry.
+  """
   fun val start_span(
     name: String,
     parent_ctx: Context = Context,
@@ -25,6 +32,10 @@ class val NoopTracer is Tracer
 
 
 class ref NoopSpan is Span
+  """
+  A no-op `Span` that silently ignores all attribute, event, and status
+  operations. Always reports `is_recording() == false`.
+  """
   let _span_context: SpanContext
 
   new ref create() =>

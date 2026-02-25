@@ -1,10 +1,23 @@
 use "time"
 
 trait tag MetricReader
+  """
+  Reads and exports metrics from a `SdkMeterProvider` on a schedule.
+  """
   be shutdown(callback: {(Bool)} val)
+    """
+    Shuts down the reader. Performs a final collect-and-export before
+    completing.
+    """
 
 
 actor PeriodicMetricReader is MetricReader
+  """
+  Timer-driven metric reader that periodically collects data from a
+  `SdkMeterProvider` and sends it to a `MetricExporter`. On shutdown,
+  performs a final collect-and-export cycle. The default interval is 60
+  seconds.
+  """
   let _provider: SdkMeterProvider tag
   let _exporter: MetricExporter
   let _interval_nanos: U64
